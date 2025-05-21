@@ -22,6 +22,8 @@ class SignUpController extends GetxController {
   final _email = ''.obs;
   final _password = ''.obs;
   final _role = 'Select Role'.obs;
+  final _isLoading = false.obs;
+  final _obscurePassword = true.obs;
 
 
   @override
@@ -70,74 +72,79 @@ class SignUpController extends GetxController {
     return null;
   }
 
-  Future<void> signUp({required String name, required String idNumber, required String role, required String email, required String password}) async{
-    try {
-      // creating user firebase auth
-      UserCredential userAuth = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: email, password: password);
+  Future<void> _signUp() async{
+    _signUpFormState.currentState!.save();
+    if(_signUpFormState.currentState!.validate()){
+      _isLoading.value = true;
+      try {
+        // creating user firebase auth
+        UserCredential userAuth = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _email.value.trim(), 
+          password: _password.value.trim()
+        );
 
-      // Save additional user data in firestore
-      await FirebaseFirestore.instance.collection('users')
-      .doc(userAuth.user!.uid)
-      .set({
-        'userId': idNumber,
-        'email': email,
-        'name': name,
-        'role':role,
-        'password': password,
-        //department: department
-      });
-      // ignore: avoid_print
-      print('Sign-Up Successful');
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      switch(e.code){
-        case 'email-already-in-use':
-          errorMessage = 'This email is already registered.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'Invalid email address.';
-          break;
-        case 'weak-password':
-          errorMessage = 'Password must be at least 6 characters.';
-          break;
-        case 'id-already-exists':
-          errorMessage = 'ID number already in use.';
-          break;
-        default:
-          errorMessage = 'Sign-up failed, please try again.';
+        if(userAuth.user != null){
+          Get.to(() => LoginFormField());
+        }
+        // Save additional user data in firestore
+        await FirebaseFirestore.instance.collection('users')
+        .doc(userAuth.user!.uid)
+        .set({
+          'userId': _idNumber.value.trim(),
+          'email': _email.value.trim(),
+          'name': _name.value.trim(),
+          'role': _role.value.trim(),
+          'password': _password.value.trim(),
+          //department: department
+        });
+        // ignore: avoid_print
+        print('Sign-Up Successful');
+      } on FirebaseAuthException catch (e) {
+          _showErrorMessage(message: _getErrorMessage(e.code));
+          //throw FirebaseAuthException(code: e.code,message: errorMessage);
+        } catch (e) {
+            _showErrorMessage(message: 'An unexpected error occurred');
+      } finally{
+          _isLoading.value = false;
       }
-      throw FirebaseAuthException(code: e.code,message: errorMessage);
-    } catch (e) {
-      Get.snackbar(
-        'unknown error', 'An error occurred. Please try again',
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
-        mainButton: TextButton(
-          onPressed: () => Get.back(), 
-          child: Text(
-            'Close',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600
-            ),
-          )
-        ),          
-        snackPosition: SnackPosition.TOP
-      );
     }
-    throw FirebaseAuthException(code: 'unknown error',message: 'An error occurred. Please try again');
   }
 
-  void validateForm(){
-    final bool isValidated = _signUpFormState.currentState!.validate();
-
-    if(!isValidated){
-      return;
+  String _getErrorMessage(String code){
+    switch(code){
+      case 'email-already-in-use':
+        return 'This email is already registered.';
+      case 'invalid-email':
+        return 'Invalid email address.';
+      case 'weak-password':
+        return 'Password must be at least 6 characters.';
+      case 'id-already-exists':
+        return 'ID number already in use.';
+      default:
+        return 'Sign-up failed: $code, \nplease try again.';
     }
-    _signUpFormState.currentState!.save();
-    signUp(name: _name.value, idNumber: _idNumber.value, role: _role.value, email: _email.value, password: _password.value);
-    Get.to(() => LoginFormField());
+  }
+
+  void _showErrorMessage({required String message}){
+    Get.snackbar(
+      'Error', message,
+      colorText: Colors.white,
+      backgroundColor: Colors.red,
+      mainButton: TextButton(
+        onPressed: () => Get.back(), 
+        child: Text(
+          'Close',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600
+          ),
+        )
+      ),          
+      snackPosition: SnackPosition.TOP,
+      animationDuration: Duration(seconds: 5),
+      icon: Icon(Icons.error_outline_rounded,size: 25, color: Colors.white,)
+    );
   }
 
   Widget signUpPageUI(BuildContext context) {
@@ -150,11 +157,11 @@ class SignUpController extends GetxController {
             key: _signUpFormState,
             autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
-              spacing: 5,
+              spacing: 3,
               children: [
                 SizedBox(height: 10,),
                 Container(
-                  height: MediaQuery.of(context).size.height*0.85,
+                  height: MediaQuery.of(context).size.height*0.6,
                     decoration: BoxDecoration(
                       color: Colors.blueGrey.shade200,
                       borderRadius: BorderRadius.circular(20)
@@ -163,7 +170,7 @@ class SignUpController extends GetxController {
                     padding: const EdgeInsets.all(12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Create an account',
@@ -231,40 +238,54 @@ class SignUpController extends GetxController {
                         ),
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 0.07,
-                          child: TextFormField(
-                            controller: _passwordTextController,
-                            validator: (password) => validatePassword(password!),
-                            onSaved: (newPassword) {
-                              _password.value = newPassword!;
-                            },
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              hintText: 'xxxxxx',
-                              hintStyle: TextStyle(color: Colors.grey,fontSize: 15,fontWeight: FontWeight.w500),
-                              labelText: 'Password',
-                              labelStyle: TextStyle(color: Colors.grey,fontSize: 18,fontWeight: FontWeight.w500),
-                              prefixIcon: Icon(Icons.password_rounded, size: 20,)
+                          child: Obx(() => TextFormField(
+                              controller: _passwordTextController,
+                              validator: (password) => validatePassword(password!),
+                              onSaved: (newPassword) {
+                                _password.value = newPassword!;
+                              },
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: 'xxxxxx',
+                                hintStyle: TextStyle(color: Colors.grey,fontSize: 15,fontWeight: FontWeight.w500),
+                                labelText: 'Password',
+                                labelStyle: TextStyle(color: Colors.grey,fontSize: 18,fontWeight: FontWeight.w500),
+                                prefixIcon: Icon(Icons.password_rounded, size: 20,),
+                                suffixIcon: IconButton(
+                                    onPressed: () => _obscurePassword.value = !_obscurePassword.value, 
+                                    icon: Icon(
+                                      _obscurePassword.value ?
+                                      Icons.visibility_off_rounded :
+                                      Icons.visibility_rounded,
+                                      color: Colors.grey,
+                                      size: 20,
+                                    )
+                                  )
+                              ),
+                              keyboardType: TextInputType.visiblePassword,
+                              obscureText: _obscurePassword.value,
+                              obscuringCharacter: '*',
                             ),
-                            keyboardType: TextInputType.visiblePassword,
                           ),
                         ),
                         SizedBox(
                           width: context.width,
-                          child: FilledButton(
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStatePropertyAll(Colors.blueGrey)
+                          child: Obx( () => FilledButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStatePropertyAll(Colors.blueGrey)
+                            ),
+                            onPressed: () => _isLoading.value ? null : _signUp(),
+                            child: _isLoading.value ? 
+                              CircularProgressIndicator(color: Colors.white,) :
+                              Text(
+                                'Sign up',
+                                style: TextStyle(
+                                  color: PColors.white,fontSize: 20,fontWeight: FontWeight.w600
+                                ),
+                              )
+                            ),
                           ),
-                          onPressed: (){
-                            validateForm();
-                          }, 
-                          child: Text(
-                          'Sign up',
-                          style: TextStyle(
-                            color: PColors.white,fontSize: 20,fontWeight: FontWeight.w600
-                          ),
-                        )
-                      ),
-                    ),
+                        ),
                     Row(
                     //spacing: 5,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -299,7 +320,8 @@ class SignUpController extends GetxController {
 
   Widget userRole(BuildContext context) {
     return SizedBox(
-      width: MediaQuery.of(context).size.height * 0.07,
+      height: MediaQuery.of(context).size.height * 0.07,
+      width: MediaQuery.of(context).size.width ,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -353,7 +375,6 @@ class SignUpController extends GetxController {
     _idNumberTextController.dispose();
     _emailTextController.dispose();
     _passwordTextController.dispose();
-    
   }
 
 }

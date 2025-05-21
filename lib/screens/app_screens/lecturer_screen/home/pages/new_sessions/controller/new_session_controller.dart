@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -5,14 +6,13 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../model/session_model.dart';
 
 class NewSessionController extends GetxController {
-  Rx<String> sessionName = ''.obs;
-  Rx<String> dateTime = ''.obs;
-  Rx<DateTime> joindateTime = DateTime.now().obs;
-  Rx<String> joinStartDateTime = ''.obs;
-  Rx<String> joinEndDateTime = ''.obs;
-  Rx<bool> generateQR = false.obs;
-  Rx<String> qrID = ''.obs;
-  RxList<SessionModel> sessions = <SessionModel>[].obs;
+  final Rx<String> sessionName = ''.obs;
+  final Rx<String> dateTime = ''.obs;
+  final Rx<DateTime> joindateTime = DateTime.now().obs;
+  final Rx<String> joinStartDateTime = ''.obs;
+  final Rx<String> joinEndDateTime = ''.obs;
+  final Rx<bool> generateQR = false.obs;
+  final Rx<String> qrID = ''.obs;
 
    
 
@@ -23,22 +23,6 @@ class NewSessionController extends GetxController {
     super.onInit();
     courseNameController = TextEditingController();
   }
-
-  addSessionToSessionsList(){
-    String active(){
-      if(sessions.length % 2 == 0){
-        return 'Active';
-      }else{
-        return 'Not Active';
-      }
-    }
-    if(sessionName.value != '' && joinEndDateTime.value != '' && joinStartDateTime.value != '' &&
-      dateTime.value != ''){
-       sessions.add(SessionModel(sessionName: sessionName.value, dateTime: dateTime.value, active: active()));
-    }
-  }
-
-
 
   String dateTimeButton(){
     if(dateTime.value == ''){
@@ -162,7 +146,7 @@ class NewSessionController extends GetxController {
     );
   }
 
-  saveQRDataToBase() {
+  Future<void> saveQRDataToBase() async {
     if(sessionName.value == '' && joinEndDateTime.value == '' && joinStartDateTime.value == '' &&
       dateTime.value == ''){
         Get.snackbar(
@@ -183,6 +167,16 @@ class NewSessionController extends GetxController {
         snackPosition: SnackPosition.TOP
        );
       }else{
+        FirebaseFirestore uploadSession = FirebaseFirestore.instance;
+        await uploadSession.collection('session')
+          .add({
+            'sessionName':sessionName,
+            'dateTime':dateTime,
+            'joindateTime':joindateTime,
+            'joinStartDateTime':joinStartDateTime,
+            'joinEndDateTime':joinEndDateTime,
+            'qrID':qrID,
+          });
         Get.snackbar(
           'Success', 'Session Created Successfully',
           colorText: Colors.white,
@@ -200,7 +194,6 @@ class NewSessionController extends GetxController {
           ),
           snackPosition: SnackPosition.TOP
         );
-        addSessionToSessionsList();
         qrID.value = '';
         sessionName.value = '';
         dateTime.value = '';
@@ -208,6 +201,62 @@ class NewSessionController extends GetxController {
         joinEndDateTime.value = '';
         joinStartDateTime.value = '';
       }
+  }
+  
+  Widget getSessionsListView() {
+    FirebaseFirestore sessions = FirebaseFirestore.instance;
+    return StreamBuilder(
+      stream: sessions
+        .collection('sessions')
+        .orderBy('timestamp',descending: true)
+        .snapshots(), 
+      builder: (context,snapshot){
+        if(snapshot.hasError){
+          return Center(
+            child: Text(
+              'Error: ${snapshot.error.toString()}'
+            ),
+          );
+        }
+        if(snapshot.connectionState == ConnectionState.waiting){
+          return Center(
+            child: CircularProgressIndicator(color: Colors.blue,)
+          );
+        }
+        if(!snapshot.hasData || snapshot.data!.docs.isEmpty){
+          return Center(
+            child: Text(
+              'No Session found',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue
+              ),
+            ),
+          );
+        }
+
+        final sessions = snapshot.data!.docs.map((doc){
+          return SessionModel.fromMap(
+            doc.data(), doc.id
+          );
+        }).toList();
+
+        return ListView.separated(
+          itemBuilder: (context, index) {
+            final session = sessions[index];
+            return ListTile(
+              title: Text(session.sessionName),
+              subtitle: Text(session.dateTime),
+              trailing: Text(session.joinEndDateTime),
+              onTap: (){},
+            );
+          }, 
+          separatorBuilder: (context, index) => Divider(), 
+          itemCount: sessions.length,
+        );
+      }
+    );
   }
 
   @override

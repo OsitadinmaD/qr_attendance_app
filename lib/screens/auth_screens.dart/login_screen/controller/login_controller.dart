@@ -15,6 +15,8 @@ class LoginController extends GetxController {
   final _email = ''.obs;
   final _password = ''.obs;
   var hide = true.obs;
+  final _isLoading = false.obs;
+  final _obscurePassword = true.obs;
 
   @override
   void onInit() {
@@ -99,12 +101,15 @@ class LoginController extends GetxController {
                               child: TextFormField(
                                 decoration: InputDecoration(
                                   border: OutlineInputBorder(),
-                                  suffixIcon: Obx( ()=>IconButton(
-                                      onPressed: (){
-                                          hide.value == false;
-                                      }, 
-                                      icon: Icon(hide.value == true ? Icons.remove_red_eye : Icons.hide_source_rounded, size: 20,)
-                                    ),
+                                  suffixIcon: IconButton(
+                                    onPressed: () => _obscurePassword.value = !_obscurePassword.value, 
+                                    icon: Icon(
+                                      _obscurePassword.value ?
+                                      Icons.visibility_off_rounded :
+                                      Icons.visibility_rounded,
+                                      color: Colors.grey,
+                                       size: 20,
+                                    )
                                   ),
                                   labelText: 'Password',
                                   labelStyle: TextStyle(
@@ -123,25 +128,26 @@ class LoginController extends GetxController {
                                   _email.value = newPassword!;
                                 },
                                 validator: (password) => validatePassword(password!),
-                                obscureText: hide.value == true ? true : false ,
+                                obscureText: _obscurePassword.value,
                                 obscuringCharacter: '*',
                               ),
                             ),
                           ),
                           SizedBox(
                             width: context.width,
-                            child: FilledButton(
-                              style: ButtonStyle(
-                              backgroundColor: WidgetStatePropertyAll(Colors.blueGrey)
-                            ),
-                            onPressed: (){
-                             validateForm();
-                            }, 
-                            child: Text(
-                              'Login',
-                              style: TextStyle(color: PColors.white,fontSize: 20,fontWeight: FontWeight.w500),
-                            )
-                          ),           ),
+                            child: Obx( () => FilledButton(
+                                style: ButtonStyle(
+                                backgroundColor: WidgetStatePropertyAll(Colors.blueGrey)
+                              ),
+                              onPressed: () => _isLoading.value ? null : _loginAuth(),
+                              child: _isLoading.value ?
+                                CircularProgressIndicator(color: Colors.white,) :
+                                Text(
+                                  'Login',
+                                  style: TextStyle(color: PColors.white,fontSize: 20,fontWeight: FontWeight.w500),
+                                )
+                                                        ),
+                            ),           ),
                         ],
                       ),
                     ),
@@ -167,38 +173,69 @@ class LoginController extends GetxController {
     }
     return null;
   }
-
-  Future<void> loginAuth({required String email, required String password}) async {
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      switch(e.code){
-        case 'user-not-found':
-          errorMessage = 'No account found for this _email';
-          break;
-        case 'wrong-_password':
-          errorMessage = 'Incorrect _password';
-          break;
-        case 'invalid-_email':
-          errorMessage = 'Invalid _email Address';
-          break;
-        default:
-          errorMessage = 'Login failed. Please try again';
+  
+  Future<void> _loginAuth() async {
+    _loginFormState.currentState!.save();
+    if(_loginFormState.currentState!.validate()){
+      _isLoading.value = true;
+      try {
+        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _email.value.trim(), 
+          password: _password.value.trim()
+        );
+        if(userCredential.user != null){
+          Get.offAll(() => LecturerNavigatorScreen());
+        }
+      } on FirebaseAuthException catch (e) {
+          _showSnackBar(message: _getErrorMessage(e.code));
+          //throw FirebaseAuthException(code: e.code,message: errorMessage);
+        } catch (e) {
+          _showSnackBar(message: 'An unexpected error occured');
+      }finally {
+        _isLoading.value = false;
       }
-      throw FirebaseAuthException(code: e.code,message: errorMessage);
     }
   }
 
-  void validateForm(){
-    final bool isValidated = _loginFormState.currentState!.validate();
-
-    if(!isValidated){
-      return ;
+  String _getErrorMessage(String code){
+    switch(code){
+      case 'user-not-found':
+        return 'No account found for this _email';
+      case 'wrong-_password':
+        return 'Incorrect _password';
+      case 'invalid-_email':
+        return 'Invalid _email Address';
+      case 'user-disabled':
+        return 'This account has been disabled';
+      case 'email-already-in-use':
+        return 'This email is already registered';
+      case 'operation-not-allowed':
+        return 'Email/password accounts are not enabled';
+      default:
+        return 'Login failed: $code. \nPlease try again';
     }
-    _loginFormState.currentState!.save();
-    loginAuth(email: _email.value, password: _password.value);
-    Get.offAll(() => NavigatorView());
+  }
+
+  void _showSnackBar({required String message}){
+    Get.snackbar(
+      'Error', message,
+      colorText: Colors.white,
+      backgroundColor: Colors.red,
+      mainButton: TextButton(
+        onPressed: () => Get.back(), 
+        child: Text(
+          'Close',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.w600
+          ),
+        )
+      ),          
+      snackPosition: SnackPosition.TOP,
+      animationDuration: Duration(seconds: 5),
+      icon: Icon(Icons.error_outline_rounded,size: 25,color: Colors.white,)
+    );
   }
 
   @override
@@ -208,6 +245,4 @@ class LoginController extends GetxController {
     _passwordTextController.dispose();
     _loginFormState.currentContext?.mounted == false; 
   }
-
-
 }

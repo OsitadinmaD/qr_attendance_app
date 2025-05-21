@@ -5,7 +5,8 @@ import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/navig
 import 'widgets/bottom_navigation_bar.dart';
 import 'widgets/lecturer_page_views.dart';
 
-class NavigatorView extends GetView<NavigatorController>{
+class LecturerNavigatorScreen extends GetView<NavigatorController>{
+  const LecturerNavigatorScreen({super.key});
   @override
   Widget build(BuildContext context) {
     final navigatorController = Get.put<NavigatorController>(NavigatorController());

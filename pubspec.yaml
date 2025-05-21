@@ -41,6 +41,7 @@ dependencies:
   firebase_auth: ^5.4.0
   get: ^4.6.6
   fancy_bottom_navigation: ^0.3.3
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
