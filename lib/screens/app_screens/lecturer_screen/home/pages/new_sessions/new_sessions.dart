@@ -16,12 +16,13 @@ class NewSessionsPage extends GetView<NewSessionController> {
     return Container(
       color: Colors.white,
       child: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(8.0),
         child: ListView(
           scrollDirection: Axis.vertical,
           physics: BouncingScrollPhysics(),
           children: [
             QRCodeInputs(),
+            SizedBox(height: 5,),
             QRCodeVisualGenerate(),
             QRCancelSaveButtons(),
             SizedBox(height: MediaQuery.of(context).size.height * 0.13,)

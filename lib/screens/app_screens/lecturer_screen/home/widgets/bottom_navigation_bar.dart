@@ -2,17 +2,16 @@ import 'package:fancy_bottom_navigation/fancy_bottom_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../navigator_controller/navigator_controller.dart';
+import '../../../../app_navigation_control/navigator_controller.dart';
 
 class CustomButtomNavigationBar extends StatelessWidget {
   const CustomButtomNavigationBar({
     super.key,
     required this.navigatorController,
-    required this.controller,
   });
 
   final NavigatorController navigatorController;
-  final NavigatorController controller;
+  
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +27,11 @@ class CustomButtomNavigationBar extends StatelessWidget {
           TabData(iconData: Icons.account_box_rounded, title: 'Profile'),
         ],
         onTabChangedListener: (positionIndex) {
-          navigatorController.currentIndex.value = positionIndex;
-          navigatorController.pageController.jumpToPage(positionIndex);
+          navigatorController.currentIndexL.value = positionIndex;
+          navigatorController.lecturerPageController.jumpToPage(positionIndex);
         },
-        initialSelection: controller.currentIndex.value,
-        key: controller.navigationKey,
+        initialSelection: navigatorController.currentIndexL.value,
+        key: navigatorController.lecturerNavigationKey,
         inactiveIconColor: Colors.grey,
         activeIconColor: Colors.white,
         circleColor: Colors.blue,

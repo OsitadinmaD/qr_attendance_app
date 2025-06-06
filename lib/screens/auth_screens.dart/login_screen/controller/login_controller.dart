@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/validators/sign_up_validators.dart';
+import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/widgets/snackbar_message_show.dart';
 
 import '../../../../constants/colors.dart';
 import '../../../app_screens/lecturer_screen/home/lecturer_navigator_view.dart';
@@ -8,6 +10,9 @@ import '../../../app_screens/lecturer_screen/home/lecturer_navigator_view.dart';
 class LoginController extends GetxController {
 
   late GlobalKey<FormState> _loginFormState; 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  Rx<User?> user = Rx<User?>(null);
+  final RxBool _signInLoading = false.obs;
 
   late TextEditingController _emailTextController;
   late TextEditingController _passwordTextController;
@@ -20,6 +25,10 @@ class LoginController extends GetxController {
 
   @override
   void onInit() {
+    //listen to auth state changes (auto-login)
+    _auth.authStateChanges().listen((User? user){
+      this.user.value = user;
+    });
     super.onInit();
     _loginFormState = GlobalKey<FormState>();
     _emailTextController = TextEditingController();
@@ -93,7 +102,7 @@ class LoginController extends GetxController {
                               onSaved: (newEmail) {
                                 _email.value = newEmail!;
                               },
-                              validator: (email) => validateEmail(email!),
+                              validator: (email) => SignUpValidators.validateEmail(email!),
                             ),
                           ),
                           Obx( () => SizedBox(
@@ -127,7 +136,7 @@ class LoginController extends GetxController {
                                 onSaved: (newPassword) {
                                   _email.value = newPassword!;
                                 },
-                                validator: (password) => validatePassword(password!),
+                                validator: (password) => SignUpValidators.validatePassword(password!),
                                 obscureText: _obscurePassword.value,
                                 obscuringCharacter: '*',
                               ),
@@ -137,9 +146,9 @@ class LoginController extends GetxController {
                             width: context.width,
                             child: Obx( () => FilledButton(
                                 style: ButtonStyle(
-                                backgroundColor: WidgetStatePropertyAll(Colors.blueGrey)
+                                backgroundColor: _isLoading.value ? WidgetStatePropertyAll(Colors.grey) : WidgetStatePropertyAll(Colors.blueGrey)
                               ),
-                              onPressed: () => _isLoading.value ? null : _loginAuth(),
+                              onPressed: _signInLoading.value ? null : () => _loginAuth(),
                               child: _isLoading.value ?
                                 CircularProgressIndicator(color: Colors.white,) :
                                 Text(
@@ -159,39 +168,47 @@ class LoginController extends GetxController {
         ),
       );
   }
-
-  String? validateEmail(String email){
-    if(!GetUtils.isEmail(email)){
-      return 'Provide valid email';
-    }
-    return null;
-  }
-
-  String? validatePassword(String password){
-    if(password.length < 6){
-      return 'Password should contain at least six characters';
-    }
-    return null;
-  }
   
+  void setLoginLoading(bool value) => _signInLoading.value = value;
+
   Future<void> _loginAuth() async {
     _loginFormState.currentState!.save();
     if(_loginFormState.currentState!.validate()){
       _isLoading.value = true;
       try {
+        setLoginLoading(true);
         UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: _email.value.trim(), 
           password: _password.value.trim()
+        ).whenComplete(() => snackBarshow(
+          title: 'Success', 
+          message: 'Login successful', 
+          backgroundColor: Colors.green, 
+          icon: Icons.badge_outlined
+          )
         );
+        user.value = userCredential.user;
         if(userCredential.user != null){
+          Future.delayed(Duration(seconds: 5));
           Get.offAll(() => LecturerNavigatorScreen());
         }
       } on FirebaseAuthException catch (e) {
-          _showSnackBar(message: _getErrorMessage(e.code));
+          snackBarshow(
+            title: 'Error',
+            message: _getErrorMessage(e.code),
+            backgroundColor: Colors.red,
+            icon: Icons.error_outline_rounded
+          );
           //throw FirebaseAuthException(code: e.code,message: errorMessage);
         } catch (e) {
-          _showSnackBar(message: 'An unexpected error occured');
+          snackBarshow(
+            title: 'Error',
+            message: 'An unexpected error occured',
+            backgroundColor: Colors.red,
+            icon: Icons.error_outline_rounded
+          );
       }finally {
+        setLoginLoading(false);
         _isLoading.value = false;
       }
     }
@@ -214,28 +231,6 @@ class LoginController extends GetxController {
       default:
         return 'Login failed: $code. \nPlease try again';
     }
-  }
-
-  void _showSnackBar({required String message}){
-    Get.snackbar(
-      'Error', message,
-      colorText: Colors.white,
-      backgroundColor: Colors.red,
-      mainButton: TextButton(
-        onPressed: () => Get.back(), 
-        child: Text(
-          'Close',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600
-          ),
-        )
-      ),          
-      snackPosition: SnackPosition.TOP,
-      animationDuration: Duration(seconds: 5),
-      icon: Icon(Icons.error_outline_rounded,size: 25,color: Colors.white,)
-    );
   }
 
   @override

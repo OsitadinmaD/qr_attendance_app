@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up_sceen/controller/sign_up_controller.dart';
+import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/controller/sign_up_controller.dart';
 
 
 class SignUpFormField extends GetView<SignUpController> {

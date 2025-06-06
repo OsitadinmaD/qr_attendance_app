@@ -18,8 +18,8 @@ class QRCancelSaveButtons extends StatelessWidget {
         children: [
           InkWell(
             onTap: (){
-              if(cancelSaveController.dateTime.value == '' && cancelSaveController.joinEndDateTime.value== ''
-                && cancelSaveController.joinStartDateTime.value == '' && cancelSaveController.sessionName.value == ''){
+              if(cancelSaveController.description.value == ''  && cancelSaveController.department.value == ''
+                 && cancelSaveController.title.value == ''){
                   Get.snackbar(
                     'Error', 'Text Fields and Date Fields are empty',
                     colorText: Colors.white,
@@ -65,12 +65,15 @@ class QRCancelSaveButtons extends StatelessWidget {
                             backgroundColor: WidgetStateProperty.all(Colors.blue)
                           ),
                           onPressed: (){
-                            cancelSaveController.qrID.value = '';
-                            cancelSaveController.dateTime.value = '';
-                            cancelSaveController.sessionName.value = '';
-                            cancelSaveController.courseNameController.text = '';
-                            cancelSaveController.joinEndDateTime.value = '';
-                            cancelSaveController.joinStartDateTime.value = '';
+                            cancelSaveController.qrCodeData.value = '';
+                            cancelSaveController.description.value = '';
+                            cancelSaveController.department.value = '';
+                            cancelSaveController.departmentTextController.text = '';
+                            cancelSaveController.descriptionTextController.text = '';
+                            cancelSaveController.title.value = '';
+                            cancelSaveController.titleController.text = '';
+                            cancelSaveController.selectedJoinStartDate.value = DateTime.now();
+                            cancelSaveController.selectedJoinEndDate.value = DateTime.now().add(Duration(days: 1));
                             Get.back();
                           }, 
                           child: Text(
@@ -122,23 +125,24 @@ class QRCancelSaveButtons extends StatelessWidget {
             ),
           ),
           InkWell(
-            onTap: () => cancelSaveController.saveQRDataToBase(),
+            onTap: () => cancelSaveController.toggleInput.value ? null: cancelSaveController.saveQRDataToBase(),
             splashColor: Colors.black,
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.35,
-              height: MediaQuery.of(context).size.height * 0.065,
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                //border: Border.all(color: Colors.black, width: 1.5),
-                borderRadius: BorderRadius.circular(10)
-              ),
-              child: Center(
-                child: Text(
-                  'Save',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.w500
+            child: Obx( () => Container(
+                width: MediaQuery.of(context).size.width * 0.35,
+                height: MediaQuery.of(context).size.height * 0.065,
+                decoration: BoxDecoration(
+                  color: cancelSaveController.toggleQrInputs() ? Colors.blue : Colors.grey,
+                  //border: Border.all(color: Colors.black, width: 1.5),
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                child: cancelSaveController.toggleInput.value ? Center(child: CircularProgressIndicator(color: Colors.white,)) : Center(
+                  child: Text(
+                    'Save',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 25,
+                      fontWeight: FontWeight.w500
+                    ),
                   ),
                 ),
               ),

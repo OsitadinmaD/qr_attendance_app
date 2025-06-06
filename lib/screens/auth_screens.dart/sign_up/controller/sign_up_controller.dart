@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_attendance_app/screens/auth_screens.dart/login_screen/login_form_field.dart';
+import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/validators/sign_up_validators.dart';
 
 import '../../../../constants/colors.dart';
+import '../widgets/snackbar_message_show.dart';
 
 class SignUpController extends GetxController {
 
@@ -16,14 +18,17 @@ class SignUpController extends GetxController {
   late TextEditingController _idNumberTextController;
   late TextEditingController _emailTextController;
   late TextEditingController _passwordTextController;
+  late TextEditingController _departmentTextController;
 
   final _name = ''.obs;
   final _idNumber = ''.obs;
   final _email = ''.obs;
   final _password = ''.obs;
   final _role = 'Select Role'.obs;
+  final _department = ''.obs;
   final _isLoading = false.obs;
   final _obscurePassword = true.obs;
+
 
 
   @override
@@ -34,42 +39,7 @@ class SignUpController extends GetxController {
     _idNumberTextController = TextEditingController();
     _emailTextController = TextEditingController();
     _passwordTextController = TextEditingController();
-  }
-
-
-  String? validateEmail(String email){
-    if(!GetUtils.isEmail(email)){
-      return 'Provide a valid email';
-    }
-    return null;
-  }
-
-  String? validateRole(String role){
-    if(role == "Select Role"){
-      return 'Please select your role';
-    }
-    return null;
-  }
-
-  String? validateName(String name){
-    if(name.isEmpty){
-      return 'Please enter your name';
-    }
-    return null;
-  }
-
-  String? validateIdNumber(String iD){
-    if(iD.isEmpty){
-      return 'Your school ID is required';
-    }
-    return null;
-  }
-
-  String? validatePassword(String password){
-    if(password.length < 6){
-      return 'Password should contain at least 6 characters';
-    }
-    return null;
+    _departmentTextController =TextEditingController();
   }
 
   Future<void> _signUp() async{
@@ -79,31 +49,44 @@ class SignUpController extends GetxController {
       try {
         // creating user firebase auth
         UserCredential userAuth = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _email.value.trim(), 
-          password: _password.value.trim()
+          email: _email.value.trim().removeAllWhitespace, 
+          password: _password.value.trim().removeAllWhitespace
+        );
+        // Save additional user data in firestore
+        await FirebaseFirestore.instance.collection('users')
+        .doc(userAuth.user!.uid)
+        .set({
+          'userId':userAuth.user!.uid,
+          'idNumber': _idNumber.value.trim().removeAllWhitespace,
+          'email': _email.value.trim(),
+          'name': _name.value.trim(),
+          'role': _role.value.trim(),
+          'password': _password.value.trim(),
+          'department': _department,
+          'createdAt': FieldValue.serverTimestamp()
+        }).whenComplete(() => snackBarshow(
+          title: 'Success', 
+          message: 'Account Created Successfully', 
+          backgroundColor: Colors.green, 
+          icon: Icons.check_circle
+          ),
+        ).onError((error, stackTrace) => snackBarshow(
+          title: 'Error', 
+          message: 'An Unexpected error occurred', 
+          backgroundColor: Colors.red, 
+          icon: Icons.error_outline_outlined
+         ),
         );
 
         if(userAuth.user != null){
           Get.to(() => LoginFormField());
         }
-        // Save additional user data in firestore
-        await FirebaseFirestore.instance.collection('users')
-        .doc(userAuth.user!.uid)
-        .set({
-          'userId': _idNumber.value.trim(),
-          'email': _email.value.trim(),
-          'name': _name.value.trim(),
-          'role': _role.value.trim(),
-          'password': _password.value.trim(),
-          //department: department
-        });
-        // ignore: avoid_print
-        print('Sign-Up Successful');
+
       } on FirebaseAuthException catch (e) {
-          _showErrorMessage(message: _getErrorMessage(e.code));
+          snackBarshow(title: 'Error',message: _getErrorMessage(e.code),backgroundColor: Colors.red,icon: Icons.error_outline_rounded);
           //throw FirebaseAuthException(code: e.code,message: errorMessage);
         } catch (e) {
-            _showErrorMessage(message: 'An unexpected error occurred');
+          snackBarshow(title: 'Error',message: 'An unexpected error occurred',backgroundColor: Colors.red,icon: Icons.error_outline_rounded);
       } finally{
           _isLoading.value = false;
       }
@@ -125,28 +108,6 @@ class SignUpController extends GetxController {
     }
   }
 
-  void _showErrorMessage({required String message}){
-    Get.snackbar(
-      'Error', message,
-      colorText: Colors.white,
-      backgroundColor: Colors.red,
-      mainButton: TextButton(
-        onPressed: () => Get.back(), 
-        child: Text(
-          'Close',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.w600
-          ),
-        )
-      ),          
-      snackPosition: SnackPosition.TOP,
-      animationDuration: Duration(seconds: 5),
-      icon: Icon(Icons.error_outline_rounded,size: 25, color: Colors.white,)
-    );
-  }
-
   Widget signUpPageUI(BuildContext context) {
     return Container(
         margin: EdgeInsets.all(16),
@@ -161,7 +122,7 @@ class SignUpController extends GetxController {
               children: [
                 SizedBox(height: 10,),
                 Container(
-                  height: MediaQuery.of(context).size.height*0.6,
+                  height: MediaQuery.of(context).size.height*0.67,
                     decoration: BoxDecoration(
                       color: Colors.blueGrey.shade200,
                       borderRadius: BorderRadius.circular(20)
@@ -182,7 +143,7 @@ class SignUpController extends GetxController {
                           height: MediaQuery.of(context).size.height * 0.07,
                           child: TextFormField(
                             controller: _nameTextController,
-                            validator: (newName) => validateName(newName!),
+                            validator: (newName) => SignUpValidators.validateName(newName!),
                             onSaved: (newName) {
                               _name.value = newName!;
                             },
@@ -201,8 +162,27 @@ class SignUpController extends GetxController {
                         SizedBox(
                           height: MediaQuery.of(context).size.height * 0.07,
                           child: TextFormField(
+                            controller: _departmentTextController,
+                            validator: (department) => SignUpValidators.validateIdNumber(department!) ,
+                            onSaved: (newDepartment) {
+                              _department.value = newDepartment!;
+                            },
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(),
+                              hintText: 'History',
+                              hintStyle: TextStyle(color: Colors.grey,fontSize: 15,fontWeight: FontWeight.w500),
+                              labelText: 'Department',
+                              labelStyle: TextStyle(color: Colors.grey,fontSize: 18,fontWeight: FontWeight.w500),
+                              prefixIcon: Icon(Icons.badge_outlined, size: 20,)
+                            ),
+                            keyboardType: TextInputType.text,
+                          ),
+                        ),
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.07,
+                          child: TextFormField(
                             controller: _idNumberTextController,
-                            validator: (newIdNmuber) => validateIdNumber(newIdNmuber!) ,
+                            validator: (newIdNmuber) => SignUpValidators.validateIdNumber(newIdNmuber!) ,
                             onSaved: (newIDNumber) {
                               _idNumber.value = newIDNumber!;
                             },
@@ -221,7 +201,7 @@ class SignUpController extends GetxController {
                           height: MediaQuery.of(context).size.height * 0.07,
                           child: TextFormField(
                             controller: _emailTextController,
-                            validator: (email) => validateEmail(email!),
+                            validator: (email) => SignUpValidators.validateEmail(email!),
                             onSaved: (newEmail) {
                               _email.value = newEmail!;
                             },
@@ -240,7 +220,7 @@ class SignUpController extends GetxController {
                           height: MediaQuery.of(context).size.height * 0.07,
                           child: Obx(() => TextFormField(
                               controller: _passwordTextController,
-                              validator: (password) => validatePassword(password!),
+                              validator: (password) => SignUpValidators.validatePassword(password!),
                               onSaved: (newPassword) {
                                 _password.value = newPassword!;
                               },
@@ -272,9 +252,9 @@ class SignUpController extends GetxController {
                           width: context.width,
                           child: Obx( () => FilledButton(
                             style: ButtonStyle(
-                              backgroundColor: WidgetStatePropertyAll(Colors.blueGrey)
+                              backgroundColor: _isLoading.value ? WidgetStatePropertyAll(Colors.grey) : WidgetStatePropertyAll(Colors.blueGrey) 
                             ),
-                            onPressed: () => _isLoading.value ? null : _signUp(),
+                            onPressed: _isLoading.value  ? null : () => _signUp(),
                             child: _isLoading.value ? 
                               CircularProgressIndicator(color: Colors.white,) :
                               Text(
@@ -353,7 +333,7 @@ class SignUpController extends GetxController {
                 _role.value = userRole!.toString();
                  //= dropDownValue;
               },
-              validator: (role) => validateRole(role.toString()),
+              validator: (role) => SignUpValidators.validateRole(role.toString()),
               hint: Text(
                 'Role ',
                 style: TextStyle(
@@ -375,6 +355,7 @@ class SignUpController extends GetxController {
     _idNumberTextController.dispose();
     _emailTextController.dispose();
     _passwordTextController.dispose();
+    _departmentTextController.dispose();
   }
 
 }

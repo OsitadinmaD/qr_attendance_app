@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/navigator_controller/navigator_controller.dart';
+import 'package:qr_attendance_app/screens/app_navigation_control/navigator_controller.dart';
 
+import '../../student_screen/student_page.dart';
 import 'widgets/bottom_navigation_bar.dart';
 import 'widgets/lecturer_page_views.dart';
 
@@ -16,10 +17,10 @@ class LecturerNavigatorScreen extends GetView<NavigatorController>{
         automaticallyImplyLeading: false,
         backgroundColor: Colors.blue,
         title: Obx(() => Text(
-            navigatorController.title(),
+            navigatorController.lecturerScreenTitle(),
             style: TextStyle(
               color: Colors.white,
-              fontSize: navigatorController.titleFontSize(),
+              fontSize: navigatorController.lecturerScreenTitleFontSize(),
               fontWeight: FontWeight.bold
             ),
           ),
@@ -30,9 +31,15 @@ class LecturerNavigatorScreen extends GetView<NavigatorController>{
           LecturerPageViews(navigatorController: navigatorController),
           Positioned(
             bottom: 0,
-            child: CustomButtomNavigationBar(navigatorController: navigatorController, controller: controller),
+            child: CustomButtomNavigationBar(
+              navigatorController: navigatorController,
+            ),
           )
         ]
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.to(() => StudentScreen()),
+        child: Icon(Icons.school),
       ),
     );
   }

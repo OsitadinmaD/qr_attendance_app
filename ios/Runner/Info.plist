@@ -32,6 +32,8 @@
    <string>This app needs photos access to get QR code from photo library</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+   <key>NSFaceIDUsageDescription</key>
+   <string>To authenticate with biometrics</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
