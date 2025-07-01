@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/sessions/widgets/available_sessions.dart';
 
-class SessionTabBarView{ 
+class AuthTabbarWidget{ 
 
-  static PreferredSizeWidget tabBar(TabController tabController){
+  static Widget tabBar({required TabController tabController, required String tab1Label, required String tab2Label}){
     return PreferredSize(
       preferredSize: Size.fromHeight(40),
       child: ClipRRect(
@@ -20,7 +19,7 @@ class SessionTabBarView{
                 child: Padding(
                   padding: const EdgeInsets.only(right: 6,left: 6),
                   child: Text(
-                    'Active Sessions',
+                    tab1Label,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -32,7 +31,7 @@ class SessionTabBarView{
                 child: Padding(
                   padding: const EdgeInsets.only(right: 5,left: 5),
                   child: Text(
-                    'Joined Sessions',
+                    tab2Label,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -54,19 +53,16 @@ class SessionTabBarView{
       ),
     );
   }
-  Widget sessionTabBarView(TabController tabController){
+
+  Widget sessionTabBarView({required TabController tabController, required Widget tab1Page, required Widget tab2Page}){
     return SizedBox(
-      height: Get.height * 0.73,
+      height: Get.height * 0.9,
       width: Get.width,
       child: TabBarView(
         controller: tabController,
         children: [
-          SizedBox.expand(
-            child: AvailableSessions().buildActiveSessionStream(),
-          ),
-          SizedBox.expand(
-            child: AvailableSessions().buildJoinedSessionsStream(),
-          )
+          SizedBox.expand(child: tab1Page),
+          SizedBox.expand(child: tab2Page)
         ]
       ),
     );

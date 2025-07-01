@@ -12,6 +12,7 @@ class StudentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final NavigatorController navigatorController = Get.find<NavigatorController>();
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         centerTitle: false,
         backgroundColor: Colors.blue,

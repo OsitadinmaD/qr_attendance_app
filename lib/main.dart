@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/lecturer_navigator_view.dart';
 import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages/my_sessions/controller/sessions_controller.dart';
+import 'package:qr_attendance_app/screens/auth_screens.dart/authentication_screen/authentication_screen.dart';
 //import 'package:qr_attendance_app/firebase_options.dart';
 import 'package:qr_attendance_app/screens/auth_screens.dart/login_screen/controller/login_controller.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/sign_up_form_field.dart';
 //import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/sign_up_form_field.dart';
 
 
@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
       ),
       home: Obx((){
         final authController = Get.find<LoginController>();
-        return authController.user.value != null ? LecturerNavigatorScreen() : SignUpFormField();
+        return authController.user.value != null ? LecturerNavigatorScreen() : AuthenticationScreen();
       })
     );
   }

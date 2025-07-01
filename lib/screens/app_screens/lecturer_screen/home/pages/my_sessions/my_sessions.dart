@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages/my_sessions/controller/sessions_controller.dart';
 import 'package:qr_attendance_app/screens/auth_screens.dart/login_screen/controller/login_controller.dart';
 
-import 'model/session_model.dart';
+import 'session model/session_model.dart';
+import 'sub_pages/sub_screen.dart';
 
 class MySessionsPage extends StatefulWidget {
   const MySessionsPage({
@@ -57,9 +58,9 @@ class _MySessionsPageState extends State<MySessionsPage> {
                   return Card(
                     margin: EdgeInsets.all(8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    color: Colors.blueGrey.shade200,
+                    color: Colors.white,
                     child: ListTile(
-                      onTap: (){},
+                      onTap: () => Get.to(() => ParticpantsAttendantsScreen(session: data,)),
                       title: Text(
                         data.title,
                         style: TextStyle(
@@ -68,31 +69,32 @@ class _MySessionsPageState extends State<MySessionsPage> {
                           color: Colors.black
                         ),
                       ),
-                      subtitle: Text(
-                        data.description,
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black
-                        ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            data.description,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black
+                            ),
+                          ),
+                          Text(
+                            data.isQRActive ? 'QR is activated' : 'QR is not activated',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                              color: data.isQRActive ? Colors.green : Colors.red
+                            ),
+                          ),
+                        ],
                       ),
-                      trailing: data.isQRActive ? 
-                        Text(
-                          'Active',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.green
-                          ),
-                        ):
-                        Text(
-                          'Inactive',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        )
+                      trailing: IconButton(
+                        onPressed: () => fetchSessionsController.showQrCode(data), 
+                        icon: Icon(Icons.qr_code_2_rounded, size: 30, color: Colors.black,),
+                      )
                     ),
                   );
                 },

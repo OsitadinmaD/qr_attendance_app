@@ -16,7 +16,7 @@ class StudentProfileMenuItems extends StatelessWidget {
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height * 0.4,
           decoration: BoxDecoration(
-            color: Colors.blue.shade50,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20),
             boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
           ),

@@ -12,6 +12,7 @@ class LecturerNavigatorScreen extends GetView<NavigatorController>{
   Widget build(BuildContext context) {
     final navigatorController = Get.put<NavigatorController>(NavigatorController());
     return Scaffold(
+      backgroundColor: Colors.white,
       extendBody: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,

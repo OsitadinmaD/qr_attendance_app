@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/sessions/widgets/tabbar.dart';
+import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/sessions/widgets/available_sessions.dart';
+import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/tabbar.dart';
 
 class StudentSessionsJoin extends StatefulWidget {
   const StudentSessionsJoin({super.key});
@@ -24,8 +25,16 @@ class _StudentSessionsJoinState extends State<StudentSessionsJoin> with SingleTi
         child: Column(
           children: [
             SizedBox(height: 5,),
-            SessionTabBarView.tabBar(tabController),
-            SessionTabBarView().sessionTabBarView(tabController),
+            SessionTabBarView.tabBar(
+              tabController: tabController,
+              tab1Label: 'Active Sessions',
+              tab2Label: 'Joined Sessions',
+            ),
+            SessionTabBarView().sessionTabBarView(
+              tab1Page: AvailableSessions().buildActiveSessionStream(),
+              tab2Page: AvailableSessions().buildJoinedSessionsStream(),
+              tabController: tabController
+            ),
           ],
         )
       ),

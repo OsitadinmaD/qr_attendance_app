@@ -81,13 +81,12 @@ class QRScannerController extends GetxController{
         for(final barcode in barcodes){
           qrData.value = barcode.rawValue!;
           _scannerController.stop();
-          _authenticateWithBiometrics(qrData.value);
         }
       }
     );
   }
 
-  Future<void> _authenticateWithBiometrics(String qrData) async {
+  Future<void> authenticateWithBiometrics(String qrData) async {
     final LocalAuthentication auth = LocalAuthentication();
     bool canAuthenticate = false;
 

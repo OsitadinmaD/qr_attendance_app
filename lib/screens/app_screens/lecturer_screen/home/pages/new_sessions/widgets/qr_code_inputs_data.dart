@@ -19,7 +19,7 @@ class QRCodeInputs extends StatelessWidget {
           children: [
             Container(
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
               ),
@@ -46,7 +46,7 @@ class QRCodeInputs extends StatelessWidget {
               ),
               Container(
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
               ),
@@ -73,7 +73,7 @@ class QRCodeInputs extends StatelessWidget {
               ),
               Container(
               decoration: BoxDecoration(
-                color: Colors.blue.shade50,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
               ),
@@ -105,7 +105,7 @@ class QRCodeInputs extends StatelessWidget {
               onTap: () => qrDataController.selectJoinStartTime(context),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
                 ),
@@ -143,7 +143,7 @@ class QRCodeInputs extends StatelessWidget {
               onTap: () => qrDataController.selectJoinEndTime(context),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
                 ),

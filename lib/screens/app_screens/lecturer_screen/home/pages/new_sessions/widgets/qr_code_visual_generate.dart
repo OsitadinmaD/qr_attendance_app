@@ -19,7 +19,7 @@ class QRCodeVisualGenerate extends StatelessWidget {
           children: [
             Obx( () => Container(
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
                 ),

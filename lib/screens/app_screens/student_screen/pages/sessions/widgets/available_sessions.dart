@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages/my_sessions/model/session_model.dart';
 import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/sessions/controller/active_sessions_controller.dart';
+
+import '../../../../lecturer_screen/home/pages/my_sessions/session model/session_model.dart';
 
 class AvailableSessions {
   AvailableSessions();
@@ -108,6 +110,7 @@ class AvailableSessions {
     final minutesLeft = remainingTime.inMinutes;
 
     return Card(
+      color: Colors.white,
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
         padding: EdgeInsets.all(16),
@@ -135,7 +138,10 @@ class AvailableSessions {
                 Icon(Icons.access_time_rounded, size: 16,),
                 const SizedBox(width: 4,),
                 Text(
-                  'Closes in $hoursLeft hours $minutesLeft minutes',
+                  hoursLeft > 1 ?
+                  'Closes in $hoursLeft hours': hoursLeft != 0 ?
+                  'Closes in $hoursLeft hour' : minutesLeft > 1 ?
+                  'Closes in $minutesLeft minutes' : 'Closes in $minutesLeft minute',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500
@@ -154,16 +160,19 @@ class AvailableSessions {
 
   Widget _buildJoinButton(SessionModel session){
     final controller = Get.put<ActiveSessionsController>(ActiveSessionsController());
+    final userId = FirebaseAuth.instance.currentUser!.uid;
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
         .collection('participants')
-        .doc('${session.sessionId}_${controller.userId}')
+        .doc('${session.sessionId}_$userId')
         .snapshots(), 
       builder: (context, snapshot) {
         final hasJoined = snapshot.hasData && snapshot.data!.exists;
 
         return ElevatedButton(
-          onPressed: hasJoined ? null : () => controller.joinSession(session.sessionId), 
+          onPressed: hasJoined ? null : () {
+            controller.joinSession(sessionId: session.sessionId,);
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: hasJoined ? Colors.grey : Colors.blue 
           ),
