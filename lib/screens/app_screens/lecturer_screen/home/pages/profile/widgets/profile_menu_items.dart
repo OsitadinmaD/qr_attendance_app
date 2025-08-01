@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages/profile/widgets/sign_out_dialog.dart';
 import 'package:qr_attendance_app/screens/auth_screens.dart/login_screen/controller/login_controller.dart';
 
 class ProfileMenuItems extends StatelessWidget {
@@ -35,11 +36,11 @@ class ProfileMenuItems extends StatelessWidget {
                   onTap: () {},
                   title: Text(
                     'Edit Profile',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 28,
+                    size: 22,
                   ),
                 ),
                 Divider(
@@ -49,11 +50,11 @@ class ProfileMenuItems extends StatelessWidget {
                 ListTile(
                   title: Text(
                     'Change Password',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 28,
+                    size: 22,
                   ),
                 ),
                 Divider(
@@ -63,11 +64,11 @@ class ProfileMenuItems extends StatelessWidget {
                 ListTile(
                   title: Text(
                     'Light/Dark Mode',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 28,
+                    size: 22,
                   ),
                 ),
                 Divider(
@@ -77,11 +78,11 @@ class ProfileMenuItems extends StatelessWidget {
                 ListTile(
                   title: Text(
                     'FeedBack',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 28,
+                    size: 22,
                   ),
                 ),
                 Divider(
@@ -89,63 +90,16 @@ class ProfileMenuItems extends StatelessWidget {
                   height: 0.5,
                 ),
                 ListTile(
-                  onTap: () {
-                    showDialog(
-                        barrierDismissible: true,
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: Text(
-                              'Sign Out',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
-                            ),
-                            actions: [
-                              OutlinedButton(
-                                style: ButtonStyle(
-                                  side: WidgetStatePropertyAll(BorderSide(color: Colors.white))
-                                ),
-                                  onPressed: () => Get.back(),
-                                  child: Text(
-                                    'Cancel',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                    ),
-                                  )),
-                              FilledButton(
-                                style: ButtonStyle(
-                                    backgroundColor:
-                                        WidgetStatePropertyAll(Colors.red)),
-                                onPressed: () => logOutController.logOut(),
-                                child: Text(
-                                  'Log Out',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ),
-                            ],
-                            backgroundColor: Colors.blue,
-                            content: Text(
-                              'Are you sure you want to log out?',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 25,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          );
-                        });
+                  onTap: () async {
+                    await signOutDialog(context, logOutController);
                   },
                   title: Text(
                     'Log Out',
-                    style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                   ),
                   trailing: Icon(
                     Icons.arrow_forward_ios_rounded,
-                    size: 28,
+                    size: 22,
                   ),
                 ),
               ],

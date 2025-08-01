@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class StudentProfilePixInfo extends StatelessWidget {
@@ -7,6 +8,7 @@ class StudentProfilePixInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final auth = FirebaseAuth.instance;
     return Container(
       width: MediaQuery.of(context).size.width,
       //height: MediaQuery.of(context).size.height * 0.32,
@@ -26,19 +28,19 @@ class StudentProfilePixInfo extends StatelessWidget {
               ),
             ),
             Text(
-              'Ositadinma Divine Akachukwu',
+              auth.currentUser!.displayName ?? '',
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
-                fontSize: 35
+                fontSize: 25
               ),
             ),
             Text(
-              'akindivine512@gmail.com',
+              auth.currentUser!.email ?? '',
               style: TextStyle(
                 color: Colors.black54,
                 fontWeight: FontWeight.w500,
-                fontSize: 22
+                fontSize: 18
               ),
             )
           ],

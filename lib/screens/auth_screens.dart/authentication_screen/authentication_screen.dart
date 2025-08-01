@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/login_screen/controller/login_controller.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/controller/sign_up_controller.dart';
+import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/signup_ui.dart';
 import 'package:qr_attendance_app/screens/auth_screens.dart/widget/auth_tabBar_widget.dart';
+
+import '../login_screen/login_ui.dart';
 
 class AuthenticationScreen extends StatefulWidget {
   const AuthenticationScreen({super.key,});
@@ -22,8 +22,6 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> with Single
 
   @override
   Widget build(BuildContext context) {
-    final loginController = Get.put<LoginController>(LoginController());
-    final signUpController = Get.put<SignUpController>(SignUpController());
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -53,8 +51,8 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> with Single
                 ),
                 AuthTabbarWidget().sessionTabBarView(
                   tabController: _tabController,
-                  tab1Page: signUpController.signUpPageUI(context),
-                  tab2Page: loginController.loginPageUI(context),
+                  tab1Page: SignUpScreen(),
+                  tab2Page: LoginScreen(),
                 ),
               ],
             )

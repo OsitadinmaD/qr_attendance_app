@@ -24,44 +24,28 @@ class NavigatorController extends GetxController {
       return "QR-Dentify";
     }else if(currentIndexL.value == 1){
       return 'Create Session';
-    }else if(currentIndexL.value == 2){
-      return 'Attendance Records';
     }else{
       return 'Profile';
     }
   }
 
   double lecturerScreenTitleFontSize(){
-    if(currentIndexL.value == 0){
-      return 30;
-    }else if(currentIndexL.value == 1){
-      return 25;
-    }else if(currentIndexL.value == 2){
-      return 25;
-    }else{
-      return 25;
-    }
+    return 24;
   }
 
   // Titles and fontsize for the student screen
   String studentScreenTitle(){
     if(currentIndexS.value == 0){
-      return "QR-Dentify \n Available Sessions";
+      return "QR-Dentify Available Sessions";
     }else if(currentIndexS.value == 1){
-      return 'Scan QR Code';
-    }else if(currentIndexS.value == 2){
-      return 'Chart Flow';
+      return 'Attendance Trend';
     }else{
       return 'Profile';
     }
   }
 
   double studentScreenTitleFontSize(){
-    if(currentIndexS.value == 0){
-      return 30;
-    }else {
-      return 25;
-    }
+    return 24;
   }
 
 

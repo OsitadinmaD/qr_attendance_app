@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_attendance_app/screens/app_navigation_control/navigator_controller.dart';
 
-import '../../student_screen/student_page.dart';
 import 'widgets/bottom_navigation_bar.dart';
 import 'widgets/lecturer_page_views.dart';
 
-class LecturerNavigatorScreen extends GetView<NavigatorController>{
-  const LecturerNavigatorScreen({super.key});
+// ignore: use_key_in_widget_constructors
+class LecturerNavigatorScreen extends StatelessWidget{
+  ///const LecturerNavigatorScreen({super.key});
   @override
   Widget build(BuildContext context) {
     final navigatorController = Get.put<NavigatorController>(NavigatorController());
@@ -37,10 +37,6 @@ class LecturerNavigatorScreen extends GetView<NavigatorController>{
             ),
           )
         ]
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Get.to(() => StudentScreen()),
-        child: Icon(Icons.school),
       ),
     );
   }

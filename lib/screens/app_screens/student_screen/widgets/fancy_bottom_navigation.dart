@@ -17,7 +17,6 @@ class StudentFancyBottomNavigation {
         tabs: [
           TabData(iconData: Icons.now_widgets_rounded, title: 'Sessions'),
           // chart => Icons.showChart
-          TabData(iconData: Icons.scanner_rounded, title: 'Scan'),
           TabData(iconData: Icons.newspaper_outlined, title: 'Record'),
           TabData(iconData: Icons.account_box_rounded, title: 'Profile')
         ], 

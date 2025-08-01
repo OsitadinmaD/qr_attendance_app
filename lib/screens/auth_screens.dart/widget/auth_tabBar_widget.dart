@@ -60,6 +60,7 @@ class AuthTabbarWidget{
       width: Get.width,
       child: TabBarView(
         controller: tabController,
+        physics: NeverScrollableScrollPhysics(),
         children: [
           SizedBox.expand(child: tab1Page),
           SizedBox.expand(child: tab2Page)

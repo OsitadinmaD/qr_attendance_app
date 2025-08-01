@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SessionModel {
   const SessionModel({
-    required this.sessionId,
+    required this.id,
     required this.lecturerId,
     required this.title,
     required this.description,
@@ -15,15 +15,15 @@ class SessionModel {
     required this.createdAt,
   });
 
-  final String sessionId, lecturerId, title, description,department, qrCodeData;
+  final String id, lecturerId, title, description,department, qrCodeData;
   final bool isQRActive;
-  final DateTime createdAt, joinEndTime, joinStartTime;
+  final DateTime? createdAt, joinEndTime, joinStartTime;
 
   //convert firestore document to session document 
   factory SessionModel.fromFirestore(DocumentSnapshot doc){
     Map<String, dynamic> session = doc.data() as Map<String, dynamic>;
     return SessionModel(
-      sessionId: session['sessionId'] ?? '',
+      id: doc.id,
       lecturerId: session['lecturerId'] ?? '',
       title: session['title'] ?? '', 
       description: session['description'] ?? '', 
@@ -36,9 +36,24 @@ class SessionModel {
     );
   }
 
+  factory SessionModel.placeHolder(String id){
+    return SessionModel(
+      id: id, 
+      lecturerId: 'Loading...', 
+      title: 'Loading....', 
+      description: 'Loading....', 
+      department: 'Loading....', 
+      joinStartTime: DateTime.now(), 
+      joinEndTime: DateTime.now().add(Duration(days: 1)), 
+      qrCodeData: 'Loading....', 
+      isQRActive: false, 
+      createdAt: DateTime.now()
+    );
+  }
+
   bool get isJoinWindowOpen {
     final now = DateTime.now();
-    return now.isAfter(joinStartTime) && now.isBefore(joinEndTime);
+    return now.isAfter(joinStartTime!) && now.isBefore(joinEndTime!);
   }
 
 }

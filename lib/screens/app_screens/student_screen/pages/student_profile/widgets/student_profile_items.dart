@@ -1,5 +1,9 @@
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../../../../auth_screens.dart/login_screen/controller/login_controller.dart';
+import '../../../../lecturer_screen/home/pages/profile/widgets/sign_out_dialog.dart';
 
 class StudentProfileMenuItems extends StatelessWidget {
   const StudentProfileMenuItems({
@@ -8,6 +12,7 @@ class StudentProfileMenuItems extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loginController = Get.put(LoginController());
     return SizedBox(
       width: MediaQuery.of(context).size.width,
       child: Padding(
@@ -29,55 +34,56 @@ class StudentProfileMenuItems extends StatelessWidget {
                   title: Text(
                     'Edit Profile',
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w500
                     ),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 28,),
+                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 22,),
                 ),
                 Divider(color: Colors.grey,height: 0.5,),
                 ListTile(
                   title: Text(
                     'Change Password',
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w500
                     ),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 28,),
+                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 22,),
                 ),
                 Divider(color: Colors.grey,height: 0.5,),
                 ListTile(
                   title: Text(
                     'Light/Dark Mode',
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w500
                     ),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 28,),
+                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 22,),
                 ),
                 Divider(color: Colors.grey,height: 0.5,),
                 ListTile(
                   title: Text(
                     'FeedBack',
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w500
                     ),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 28,),
+                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 22,),
                 ),
                 Divider(color: Colors.grey,height: 0.5,),
                 ListTile(
+                  onTap: () async => await signOutDialog(context, loginController),
                   title: Text(
                     'Log Out',
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.w500
                     ),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 28,),
+                  trailing: Icon(Icons.arrow_forward_ios_rounded,size: 22,),
                 ),
               ],
             ),

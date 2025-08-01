@@ -11,7 +11,7 @@ class SignUpValidators {
   }
 
   static String? validateRole(String role){
-    if(role == "Select Role"){
+    if(role.isEmpty){
       return 'Please select your role';
     }
     return null;

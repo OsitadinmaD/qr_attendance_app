@@ -228,7 +228,7 @@ class NewSessionController extends GetxController {
               'department': department.value,
               'joinStartTime':Timestamp.fromDate(selectedJoinStartDate.value),
               'joinEndTime':Timestamp.fromDate(selectedJoinEndDate.value),
-              'qrCodeData': qrCodeData.value,
+              'qrCodeData': qrCodeData.value.trim(),
               'isQRActive': false,
               'createdAt': FieldValue.serverTimestamp()
             }).whenComplete(() { 

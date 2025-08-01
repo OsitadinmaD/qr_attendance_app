@@ -4,14 +4,15 @@ import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages
 
 import '../controller/attendance_record_controller.dart';
 import '../controller/participants_controller.dart';
-import '../participant model/participant_model.dart';
 
 class AttendanceParticipantsScreens {
    final sessionAttendanceController = Get.put<AttendanceRecordController>(AttendanceRecordController());
 
   Widget buildAttendanceScreen(SessionModel session) {
-    sessionAttendanceController.loadAttendance(session.sessionId);
-    return Column(
+    sessionAttendanceController.loadAttendance(session.id);
+    return sessionAttendanceController.isLoading.value ? 
+      Center(child: CircularProgressIndicator(color: Colors.blue,),) :
+      Column(
       children: [
         sessionAttendanceController.buildAttendanceStat(),
         //search bar
@@ -34,9 +35,12 @@ class AttendanceParticipantsScreens {
     );
   }
   
-  final sessionParticipantsController = Get.put<ParticipantsController>(ParticipantsController());
+
   Widget buildParticipantScreen(SessionModel session) {
-    return Column(
+    final sessionParticipantsController = Get.put<ParticipantsController>(ParticipantsController(sessionId: session.id));
+    return sessionParticipantsController.isLoading.value ?
+      Center(child: CircularProgressIndicator(color: Colors.blue,)) :
+     Column(
       children: [
         sessionParticipantsController.buildAttendanceStat(),
         //search bar
@@ -54,40 +58,9 @@ class AttendanceParticipantsScreens {
             },
           ),
         ),
-        Expanded(
-          child: StreamBuilder<List<ParticipantModel>>(
-            stream: sessionParticipantsController.loadParticipantsStream(session.sessionId), 
-            builder: (context, snapshot) {
-              if(snapshot.connectionState == ConnectionState.waiting){
-                return Center(child: CircularProgressIndicator(color: Colors.white,));
-              }
-              if(snapshot.hasError){
-                return Center(
-                  child: Text(
-                    'An Error Occurred',
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontWeight: FontWeight.w500
-                    ),
-                  ),
-                );
-              }
-              if (!snapshot.hasData){
-                return Center(
-                  child: ClipRRect(
-                    child: Image.asset('assets/in_app_images/empty.png',fit: BoxFit.cover,),
-                  ),
-                );
-              }
-              // Update controller state
-              sessionParticipantsController.participants.value = snapshot.data!;
-              return sessionParticipantsController.buildParticipantList();
-            },
-          )
-        )
+        
+        sessionParticipantsController.buildParticipantList()
       ],
     );
   }
-
-
 }

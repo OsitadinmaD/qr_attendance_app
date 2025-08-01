@@ -23,7 +23,6 @@ class CustomButtomNavigationBar extends StatelessWidget {
         tabs: [
           TabData(iconData: Icons.now_widgets_rounded, title: 'Sessions'),
           TabData(iconData: Icons.fiber_new_rounded, title: 'Create'),
-          TabData(iconData: Icons.newspaper_rounded, title: 'Attendance'),
           TabData(iconData: Icons.account_box_rounded, title: 'Profile'),
         ],
         onTabChangedListener: (positionIndex) {

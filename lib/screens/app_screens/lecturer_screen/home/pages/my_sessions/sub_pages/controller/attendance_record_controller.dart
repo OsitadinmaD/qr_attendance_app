@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages/my_sessions/sub_pages/participant%20model/participant_model.dart';
-import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/sessions/attendance_model/attendance_model.dart';
+
+import '../../../../../../student_screen/pages/sessions/attendance_log_model.dart/attendance_model_log.dart';
 
 class AttendanceRecordController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final RxList<AttendanceRecordModel> allAttendance = <AttendanceRecordModel>[].obs;
-  final RxList<ParticipantModel> allParticipants = <ParticipantModel>[].obs;
+  final RxList<AttendanceRecord> allAttendance = <AttendanceRecord>[].obs;
   final RxString searchQuery = ''.obs;
   final RxBool isLoading = true.obs;
+  RxInt participantLength = 0.obs;
   late TextEditingController searchController;
 
   @override
@@ -19,7 +19,7 @@ class AttendanceRecordController extends GetxController {
     searchController = TextEditingController();
   }
 
-  List<AttendanceRecordModel> get filteredAttendance {
+  List<AttendanceRecord> get filteredAttendance {
     if(searchQuery.value.isEmpty) return allAttendance;
 
     return allAttendance.where((record){
@@ -29,59 +29,25 @@ class AttendanceRecordController extends GetxController {
     }).toList();
   }
 
-  List<AttendanceRecordModel> get attendedStudents {
-    return allAttendance.where((record) => record.attendanceMarked).toList();
-  }
-
-  List<ParticipantModel> get allParticipant{
-    return allParticipants;
-  }
-
   void loadAttendance(String sessionId){
-    isLoading.value = true;
 
-    // Load Participants stream
-    _firestore.collection('participants')
-      .where('sessionId', isEqualTo: sessionId)
-      .snapshots()
-      .listen((participantSnapshot){
-        allParticipant.assignAll(
-          participantSnapshot.docs.map((doc) => ParticipantModel.fromFirestore(doc)).toList()
-        );
-        _matchAttendanceWithParticipants();
-      });
-
-    // load attendance stream
     _firestore.collection('attendance')
-      .where('sessionId', isEqualTo: sessionId)
-      .snapshots()
-      .listen((attendanceSnapshot) {
-        allAttendance.assignAll(
-          attendanceSnapshot.docs.map((doc) => AttendanceRecordModel.fromFirestore(doc)).toList()
-        );
-        _matchAttendanceWithParticipants();
-    });
-  }
-
-  void _matchAttendanceWithParticipants(){
-    //create attendance record for all participants
-    final records = allParticipant.map((participant){
-      final attendance = allAttendance.firstWhere(
-        (attendee) => attendee.studentId == participant.studentId,
-        orElse: () => AttendanceRecordModel.empty(participant),
+    .where('sessionId', isEqualTo: sessionId)
+    .orderBy('timestamp', descending: true)
+    .snapshots()
+    .listen((snapshot){
+      allAttendance.assignAll(
+        snapshot.docs.map((doc) => AttendanceRecord.fromFirestore(doc)).toList()
       );
-      return attendance;
-    }).toList();
-
-    allAttendance.assignAll(records);
-    isLoading.value = false;
+      isLoading.value = false;
+    });
   }
 
    //build attendance stat
   Widget buildAttendanceStat(){
     return Obx((){
-      final present = attendedStudents.length;
-      final total = allParticipant.length;
+      final present = allAttendance.length;
+      final total = participantLength;
 
       return Card(
         margin: EdgeInsets.all(16),
@@ -161,7 +127,7 @@ class AttendanceRecordController extends GetxController {
   }
 
   //build participant tile
-  Widget _buildStudentTile(AttendanceRecordModel record){
+  Widget _buildStudentTile(AttendanceRecord record){
     return Card(
       margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
       child: ListTile(
@@ -189,9 +155,8 @@ class AttendanceRecordController extends GetxController {
                 fontSize: 16
               ),
             ),
-            if(record.attendanceMarked)
               Text(
-                'Attended: ${DateFormat.MMMd().add_jm().format(record.markedAt!)}',
+                'Attended: ${DateFormat.MMMd().add_jm().format(record.timestamp)}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
@@ -200,8 +165,7 @@ class AttendanceRecordController extends GetxController {
              ),
           ],
         ),
-        trailing: record.attendanceMarked ?
-          Chip(
+        trailing: Chip(
             color: WidgetStateProperty.all(Colors.green),
             label: Text(
               'Present',
@@ -211,18 +175,7 @@ class AttendanceRecordController extends GetxController {
                 fontSize: 16
               ),
             ),
-          ) : 
-          Chip(
-            color: WidgetStateProperty.all(Colors.red),
-            label: Text(
-              'Absent',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 16
-              ),
-            ),
-          ) 
+          )
       ),
     );
   }

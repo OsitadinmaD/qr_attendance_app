@@ -1,7 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages/my_sessions/controller/sessions_controller.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/login_screen/controller/login_controller.dart';
 
 import 'session model/session_model.dart';
 import 'sub_pages/sub_screen.dart';
@@ -17,7 +17,7 @@ class MySessionsPage extends StatefulWidget {
 
 class _MySessionsPageState extends State<MySessionsPage> {
   final SessionsController fetchSessionsController = Get.find<SessionsController>();
-  final String lecturerId = Get.find<LoginController>().user.value!.uid;
+  final String lecturerId = FirebaseAuth.instance.currentUser!.uid;
 
   @override
   void initState(){
@@ -54,13 +54,13 @@ class _MySessionsPageState extends State<MySessionsPage> {
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index) {
                   SessionModel data = snapshot.data![index];
-
+ 
                   return Card(
                     margin: EdgeInsets.all(8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                     color: Colors.white,
                     child: ListTile(
-                      onTap: () => Get.to(() => ParticpantsAttendantsScreen(session: data,)),
+                      onTap: () async => await Get.to(() => ParticpantsAttendantsScreen(session: data,)),
                       title: Text(
                         data.title,
                         style: TextStyle(
