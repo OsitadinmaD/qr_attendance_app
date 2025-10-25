@@ -1,10 +1,12 @@
 // ignore_for_file: avoid_print
 
+import 'package:confetti/confetti.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:flutter/material.dart';
+import 'package:qr_attendance_app/constants/helpers/snackbar_message_show.dart';
+import '../../attendance_screen.dart/model/attendance.dart';
 
 //import '../../../../../../util/permissions_service.dart'; 
 
@@ -12,10 +14,30 @@ class AttendanceController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final LocalAuthentication _auth = LocalAuthentication();
   //final PermissionService _permissionService = PermissionService();
+  late ConfettiController confettiController;
+  
 
   // Reactive variables for UI states
+  RxList<Attendance> studentAttendanceHistory = <Attendance>[].obs;
+  RxMap<String, List<Attendance>> groupedAttendance = <String, List<Attendance>>{}.obs;
   RxBool isLoading = false.obs;
+  
   RxString message = ''.obs; // For displaying success/error messages
+  RxBool isAttendanceSuccess = false.obs; // To track if attendance was successfully marked
+
+  @override
+  void onInit() {
+    super.onInit();
+    confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    ever(isAttendanceSuccess, (bool isSuccess) {
+      if (isSuccess) {
+        confettiController.play();
+      } 
+    });
+  }
+
+  
+
 
   // --- Core Logic for Attendance Marking ---
   Future<void> markAttendance({
@@ -23,6 +45,8 @@ class AttendanceController extends GetxController {
     required String currentSessionId, // The session the user is currently in
   }) async {
     isLoading.value = true;
+    isAttendanceSuccess.value = false;
+
     message.value = 'Processing attendance...';
     final userId = FirebaseAuth.instance.currentUser!.uid;
 
@@ -36,7 +60,7 @@ class AttendanceController extends GetxController {
 
       if (participantSnapshot.docs.isEmpty) {
         message.value = 'Error: Invalid QR Code Data. Participant not found.';
-        _showSnackbar('Attendance Failed', message.value, Colors.red);
+        SnackbarMessageShow.errorSnack(title: 'Attendance Failed',message: message.value,);
         return;
       }
 
@@ -47,9 +71,10 @@ class AttendanceController extends GetxController {
       // 2. Validate Session Match
       if (participantSessionId != currentSessionId) {
         message.value = 'Error: QR code is for a different session.';
-        _showSnackbar('Attendance Failed', message.value, Colors.red);
+        SnackbarMessageShow.errorSnack(title: 'Attendance Failed',message: message.value,);
         return;
       }
+
 
       // 3. Check if Student Already Marked Present for this Session
       final existingAttendance = await _firestore
@@ -62,7 +87,7 @@ class AttendanceController extends GetxController {
 
       if (existingAttendance.docs.isNotEmpty) {
         message.value = 'You have already marked attendance for this session.';
-        _showSnackbar('Attendance Info', message.value, Colors.orange);
+        SnackbarMessageShow.infoSnack(title: 'Attendance Info', message: message.value,);
         return;
       }
 
@@ -72,7 +97,7 @@ class AttendanceController extends GetxController {
       String biometricStatus = authenticated ? 'success' : 'failed';
       if (!authenticated) {
         message.value = 'Biometric authentication failed or canceled.';
-        _showSnackbar('Authentication Failed', message.value, Colors.red);
+        SnackbarMessageShow.errorSnack(title: 'Authentication Failed',message: message.value, );
         return;
       }
 
@@ -80,6 +105,8 @@ class AttendanceController extends GetxController {
       .collection('usersData')
       .doc(userId)
       .get();
+
+      final sessionName = participantData['sessionTitle'] ?? 'Unknown Session';
 
       if (!userDoc.exists) throw Exception('User data not found');
 
@@ -89,6 +116,7 @@ class AttendanceController extends GetxController {
       await _firestore.collection('attendance').add({
         'studentId': studentId,
         'sessionId': currentSessionId,
+        'sessionName': sessionName,
         'studentName': userData['name'],
         'studentIdNumber': userData['idNumber'],
         'department': userData['department'],
@@ -98,18 +126,20 @@ class AttendanceController extends GetxController {
         'status': 'present',
       }).whenComplete((){
         message.value = 'Attendance marked successfully!';
-        _showSnackbar('Success', message.value, Colors.green);
+        SnackbarMessageShow.successSnack(title: 'Success',message: message.value,);
       });
+
+      //find the participant document using unique qrCode data
+      isAttendanceSuccess.value = true;
 
       await FirebaseFirestore.instance
         .collection('participants')
-        .doc('${currentSessionId}_$userId')
+        .doc(participantSnapshot.docs.first.id)
         .update({'attendanceMarked': true});
 
     } catch (e) {
-      print('Error marking attendance: $e'); // Log the error for debugging
       message.value = 'An unexpected error occurred: ${e.toString()}';
-      _showSnackbar('Error', message.value, Colors.red);
+      SnackbarMessageShow.errorSnack(title: 'Error',message: message.value,);
     } finally {
       isLoading.value = false;
     }
@@ -121,16 +151,16 @@ class AttendanceController extends GetxController {
       bool canCheckBiometrics = await _auth.canCheckBiometrics;
       if (!canCheckBiometrics) {
         message.value = 'Biometrics not available on this device.';
-        _showSnackbar('Biometrics Error', message.value, Colors.red);
+        SnackbarMessageShow.errorSnack(title:'Biometrics Error', message: message.value,);
         return false;
       }
 
-      //List<BiometricType> availableBiometrics = await _auth.getAvailableBiometrics();
-      //if (availableBiometrics.isEmpty) {
-        //message.value = 'No biometrics enrolled. Please set up fingerprint/face ID.';
-        //_showSnackbar('Biometrics Setup', message.value, Colors.orange);
-        //return false;
-      //}
+      List<BiometricType> availableBiometrics = await _auth.getAvailableBiometrics();
+      if (availableBiometrics.isEmpty) {
+        message.value = 'No biometrics enrolled. Please set up fingerprint/face ID.';
+        SnackbarMessageShow.infoSnack(title: 'Biometrics Setup',message: message.value,);
+        return false;
+      }
 
       final authenticated = await _auth.authenticate(
         localizedReason: 'Please authenticate to mark your attendance',
@@ -143,21 +173,14 @@ class AttendanceController extends GetxController {
     } catch (e) {
       print('Biometric authentication error: $e');
       message.value = 'Error during biometric authentication: ${e.toString()}';
-      _showSnackbar('Biometrics Error', message.value, Colors.red);
+      SnackbarMessageShow.errorSnack(title: 'Biometrics Error',message: message.value,);
       return false;
     }
   }
-
-  // Helper for displaying snackbars consistently
-  void _showSnackbar(String title, String message, Color backgroundColor) {
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: backgroundColor,
-      colorText: Colors.white,
-      margin: const EdgeInsets.all(10),
-      duration: const Duration(seconds: 3),
-    );
+  @override
+  void onClose() {
+    //confettiController.dispose();
+    super.onClose();
   }
 }
+

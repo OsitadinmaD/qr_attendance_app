@@ -26,8 +26,8 @@ class StudentFancyBottomNavigation {
         },
         activeIconColor: Colors.white,
         inactiveIconColor: Colors.grey,
-        circleColor: Colors.blue,
-        textColor: Colors.blue,
+        circleColor: Theme.of(context).colorScheme.primary,
+        textColor: Colors.black,
         initialSelection: navigatorController.currentIndexS.value,
       ),
     );

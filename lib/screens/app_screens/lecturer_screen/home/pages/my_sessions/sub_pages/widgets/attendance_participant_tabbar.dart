@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 class AttendanceParticipantTabbar{ 
 
-  static PreferredSizeWidget tabBar({required TabController tabController, required String tab1Label, required String tab2Label}){
+  static PreferredSizeWidget tabBar({required TabController tabController, required String tab1Label, required String tab2Label, required BuildContext context}) {
     return PreferredSize(
       preferredSize: Size.fromHeight(40),
       child: ClipRRect(
@@ -44,10 +44,10 @@ class AttendanceParticipantTabbar{
             indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(20)),
-              color: Colors.blue,
+              color: Theme.of(context).colorScheme.primary,
             ),
             labelColor: Colors.white,
-            unselectedLabelColor: Colors.blueGrey,
+            unselectedLabelColor: Colors.blue,
           ),
         ),
       ),

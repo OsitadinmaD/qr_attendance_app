@@ -15,45 +15,44 @@ class QRCodeVisualGenerate extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
-          spacing: 15,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Obx( () => Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: List.filled(1, BoxShadow(color: Colors.black38,blurRadius: 1,spreadRadius: 0.5))
-                ),
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height * 0.315,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: qrCodeController.generateQrCode(),
+              Divider(color: Theme.of(context).colorScheme.primary,),
+              Text(
+                'Visualize generated QR code (optional)',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ),
-            GestureDetector(
-              onTap: () => qrCodeController.qrCodeID(),
-              child: Obx( () => Container(
-                  width: MediaQuery.of(context).size.width * 0.5,
-                  height: MediaQuery.of(context).size.height * 0.065,
-                  decoration: BoxDecoration(
-                    color: qrCodeController.toggleQrInputs() ? Colors.blue : Colors.grey,
-                    //border: Border.all(color: Colors.black, width: 1.5),
-                    borderRadius: BorderRadius.circular(10)
+              Divider(color: Theme.of(context).colorScheme.primary,),
+              const SizedBox(height: 10,),
+            Obx( () => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => qrCodeController.qrCodeID(), 
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: qrCodeController.toggleQrInputs() ? 
+                      Theme.of(context).colorScheme.primary : Theme.of(context).primaryColorLight,
                   ),
-                  child: Center(
-                    child: Text(
-                      'Generate QR',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.w500
-                      ),
+                  child: Text(
+                    'Visualize QR',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500
                     ),
                   ),
                 ),
-              ),
-            )
+                SizedBox(
+                  height: Get.height * 0.15,
+                  child: qrCodeController.generateQrCode()
+                ),
+              ],
+            ),
+            ),
           ],
         ),
       ),

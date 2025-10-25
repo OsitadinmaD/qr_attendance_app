@@ -31,10 +31,10 @@ class CustomButtomNavigationBar extends StatelessWidget {
         },
         initialSelection: navigatorController.currentIndexL.value,
         key: navigatorController.lecturerNavigationKey,
-        inactiveIconColor: Colors.grey,
+        inactiveIconColor: Colors.blueGrey,
         activeIconColor: Colors.white,
-        circleColor: Colors.blue,
-        textColor: Colors.blue,
+        circleColor: Theme.of(context).colorScheme.primary,
+        textColor: Theme.of(context).colorScheme.primary,
         )
       ),
     );

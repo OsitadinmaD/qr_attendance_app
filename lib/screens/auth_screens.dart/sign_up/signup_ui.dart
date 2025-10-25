@@ -158,7 +158,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         width: context.width,
                         child: Obx( () => FilledButton(
                           style: ButtonStyle(
-                            backgroundColor: _signUpController.isLoading.value ? WidgetStatePropertyAll(Colors.grey) : WidgetStatePropertyAll(Colors.blue) 
+                            backgroundColor: _signUpController.isLoading.value ? WidgetStatePropertyAll(Theme.of(context).primaryColorLight) : WidgetStatePropertyAll(Theme.of(context).primaryColor) 
                           ),
                           onPressed: _signUpController.isLoading.value  ? null : () async => await signUp(),
                           child: _signUpController.isLoading.value ? 
@@ -178,7 +178,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   children: [
                     Text(
                       'Already have an account ? --- Sign in',
-                      style: TextStyle(color: PColors.black,fontSize: 20,fontWeight: FontWeight.w500),
+                      style: TextStyle(color: PColors.black,fontSize: 14,fontWeight: FontWeight.w500),
+                      
                     ),
                   ],
                  )

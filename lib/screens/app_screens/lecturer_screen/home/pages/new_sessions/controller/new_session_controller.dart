@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/widgets/snackbar_message_show.dart';
+import 'package:qr_attendance_app/constants/helpers/snackbar_message_show.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:uuid/uuid.dart';
@@ -14,7 +14,7 @@ class NewSessionController extends GetxController {
   //final Rx<String> joinStartTime = ''.obs;
   final Rx<DateTime> selectedJoinStartDate = DateTime.now().obs;
   final TimeOfDay currentJoinStartTime = TimeOfDay.now();
-  final Rx<DateTime> selectedJoinEndDate = DateTime.now().add(Duration(days: 1)).obs;
+  final Rx<DateTime> selectedJoinEndDate = DateTime.now().add(Duration(hours: 10)).obs;
   final TimeOfDay currentJoinEndTime = TimeOfDay.fromDateTime(DateTime.now().add(Duration(hours: 1)));
   //final Rx<String> joinEndTime = ''.obs;
   final Rx<String> qrCodeData = ''.obs;
@@ -90,11 +90,9 @@ class NewSessionController extends GetxController {
       }
     }else{
       Get.back();
-      snackBarshow(
+      SnackbarMessageShow.errorSnack(
         title: 'Error', 
-        message: 'The join start date must not be a day before today', 
-        backgroundColor: Colors.red, 
-        icon: Icons.error_outline_rounded
+        message: 'The join start can\'t be null',
       );
     }
   }
@@ -155,11 +153,9 @@ class NewSessionController extends GetxController {
       }
     }else{
       Get.back();
-      snackBarshow(
+      SnackbarMessageShow.errorSnack(
         title: 'Error', 
         message: 'The join end date must not be a day before join start date', 
-        backgroundColor: Colors.red, 
-        icon: Icons.error_outline_rounded
       );
     }
   }
@@ -168,23 +164,9 @@ class NewSessionController extends GetxController {
     if(toggleQrInputs()){
       qrCodeData.value = 'Session:$_sessionId:${DateTime.now().millisecondsSinceEpoch}';
     }else{
-      Get.snackbar(
-        'Error', 
-        'All Text and Date Fields are Required',
-        colorText: Colors.white,
-        backgroundColor: Colors.red,
-        snackPosition: SnackPosition.TOP,
-        mainButton: TextButton(
-          onPressed: () => Get.back(), 
-          child: Text(
-            'Close',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600
-            ),
-          )
-        )
+      SnackbarMessageShow.errorSnack(
+        title: 'Error', 
+        message: 'All Text and Date Fields are Required',
       );
     }
   }
@@ -195,11 +177,11 @@ class NewSessionController extends GetxController {
         //Remember to add the logo image at the center of the QR code
         data: qrCodeData.value,
         eyeStyle: QrEyeStyle(
-          color: Colors.blue,
+          color: Colors.black,
           eyeShape: QrEyeShape.square
         ),
         dataModuleStyle: QrDataModuleStyle(
-          color: Colors.blue,
+          color: Colors.black,
         ),
       ),
     );
@@ -233,11 +215,9 @@ class NewSessionController extends GetxController {
               'createdAt': FieldValue.serverTimestamp()
             }).whenComplete(() { 
               //toggleInput.value = false;
-              snackBarshow(
+              SnackbarMessageShow.successSnack(
               title: 'Success', 
               message: 'Session Created and Uploaded Successfully', 
-              backgroundColor: Colors.green, 
-              icon: Icons.check_circle_outline
              );}
             );
           qrCodeData.value = '';
@@ -251,11 +231,9 @@ class NewSessionController extends GetxController {
           selectedJoinStartDate.value = DateTime.now();
         } catch (e) {
           toggleInput.value == false;
-          snackBarshow(
+          SnackbarMessageShow.errorSnack(
             title: 'Error', 
             message: 'An Unexpected Error Ocurred \nPlease try again', 
-            backgroundColor: Colors.red, 
-            icon: Icons.error_outline_rounded
           );
         } finally{
           toggleInput.value = false;

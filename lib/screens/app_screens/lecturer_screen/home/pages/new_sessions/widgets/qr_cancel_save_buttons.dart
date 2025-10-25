@@ -42,7 +42,7 @@ class QRCancelSaveButtons extends StatelessWidget {
                   context: context, 
                   builder: (context) {
                     return AlertDialog(
-                      backgroundColor: Colors.blueAccent,
+                      backgroundColor: Theme.of(context).primaryColorLight,
                       title: Text(
                         'Cancel',
                         style: TextStyle(
@@ -60,10 +60,7 @@ class QRCancelSaveButtons extends StatelessWidget {
                         ),
                       ),
                       actions: [
-                        FilledButton(
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(Colors.blue)
-                          ),
+                        ElevatedButton(
                           onPressed: (){
                             cancelSaveController.qrCodeData.value = '';
                             cancelSaveController.description.value = '';
@@ -106,7 +103,7 @@ class QRCancelSaveButtons extends StatelessWidget {
             splashColor: Colors.black,
             child: Container(
               width: MediaQuery.of(context).size.width * 0.35,
-              height: MediaQuery.of(context).size.height * 0.065,
+              height: MediaQuery.of(context).size.height * 0.055,
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 border: Border.all(color: Colors.black, width: 1.5),
@@ -117,8 +114,8 @@ class QRCancelSaveButtons extends StatelessWidget {
                   'Cancel',
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 25,
-                    fontWeight: FontWeight.w400
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500
                   ),
                 ),
               ),
@@ -129,9 +126,9 @@ class QRCancelSaveButtons extends StatelessWidget {
             splashColor: Colors.black,
             child: Obx( () => Container(
                 width: MediaQuery.of(context).size.width * 0.35,
-                height: MediaQuery.of(context).size.height * 0.065,
+                height: MediaQuery.of(context).size.height * 0.055,
                 decoration: BoxDecoration(
-                  color: cancelSaveController.toggleQrInputs() ? Colors.blue : Colors.grey,
+                  color: cancelSaveController.toggleQrInputs() ? Theme.of(context).colorScheme.primary : Theme.of(context).primaryColorLight,
                   //border: Border.all(color: Colors.black, width: 1.5),
                   borderRadius: BorderRadius.circular(10)
                 ),
@@ -140,7 +137,7 @@ class QRCancelSaveButtons extends StatelessWidget {
                     'Save',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 25,
+                      fontSize: 18,
                       fontWeight: FontWeight.w500
                     ),
                   ),

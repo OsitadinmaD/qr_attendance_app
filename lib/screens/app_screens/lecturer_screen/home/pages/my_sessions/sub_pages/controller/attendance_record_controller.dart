@@ -1,188 +1,198 @@
+// lib/controllers/lecturer_controller.dart
+
+import 'dart:typed_data';
+
+import 'package:csv/csv.dart';
+import 'package:file_saver/file_saver.dart';
+import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-import '../../../../../../student_screen/pages/sessions/attendance_log_model.dart/attendance_model_log.dart';
+import '../../../../../../../../constants/helpers/snackbar_message_show.dart';
 
-class AttendanceRecordController extends GetxController {
+class AttendanceViewModel {
+  final String studentId;
+  final String studentName;
+  final String matricNumber;
+  final String department;
+  final DateTime timestamp;
+
+  AttendanceViewModel({
+    required this.studentId,
+    required this.studentName,
+    required this.matricNumber,
+    required this.department,
+    required this.timestamp,
+  });
+}
+
+class AttendeesController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final RxList<AttendanceRecord> allAttendance = <AttendanceRecord>[].obs;
-  final RxString searchQuery = ''.obs;
-  final RxBool isLoading = true.obs;
-  RxInt participantLength = 0.obs;
+  RxBool isLoading = false.obs;
+  RxBool isDownloading = false.obs;
+  RxString message = ''.obs;
+  RxList<AttendanceViewModel> sessionAttendees = <AttendanceViewModel>[].obs;
+  RxList<AttendanceViewModel> filteredAttendees = <AttendanceViewModel>[].obs;
+  RxString searchQuery = ''.obs;
   late TextEditingController searchController;
 
   @override
   void onInit() {
     super.onInit();
+    ever(searchQuery,(_) => _filterAttendees());
     searchController = TextEditingController();
   }
 
-  List<AttendanceRecord> get filteredAttendance {
-    if(searchQuery.value.isEmpty) return allAttendance;
-
-    return allAttendance.where((record){
-      return
-      record.studentName.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-      record.studentIdNumber.toLowerCase().contains(searchQuery.value.toLowerCase());
-    }).toList();
-  }
-
-  void loadAttendance(String sessionId){
-
-    _firestore.collection('attendance')
-    .where('sessionId', isEqualTo: sessionId)
-    .orderBy('timestamp', descending: true)
-    .snapshots()
-    .listen((snapshot){
-      allAttendance.assignAll(
-        snapshot.docs.map((doc) => AttendanceRecord.fromFirestore(doc)).toList()
-      );
-      isLoading.value = false;
-    });
-  }
-
-   //build attendance stat
-  Widget buildAttendanceStat(){
-    return Obx((){
-      final present = allAttendance.length;
-      final total = participantLength;
-
-      return Card(
-        margin: EdgeInsets.all(16),
-        color: Colors.white,
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStatCard('Present', '$present'),
-              _buildStatCard('Absent', '${total - present}'),
-              _buildStatCard('Total', '$total' ),
-            ],
-          ),
-        ),
-      );
-    });
-  }
-
-  Widget _buildStatCard(String title, String value){
-    return Column(
-      spacing: 4,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 15
-          ),
-        ),
-        Text(
-          value,
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: 20,
-            fontWeight: FontWeight.bold
-          ),
-        ),
-      ],
-    );
-  }
-
-  //build participants list
-  Widget buildAttendanceList(){
-    return Expanded(
-      child: Obx((){
-        if(isLoading.value){
-          return Center(child: CircularProgressIndicator(color: Colors.white,));
-        }
-        final students  = filteredAttendance;
-
-        if(students.isEmpty){
-          return Center(
-            child: ClipRRect(
-              child: Image.asset(
-                'assets/in_app_images/empty.png',
-                fit: BoxFit.cover,
-              ),
-            
-            ),
-          );
-        }
-      
-        return ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: students.length,
-          itemBuilder: (context, index) {
-            final student = students[index];
-            
-            return _buildStudentTile(student);
-          },
-        );
-      }
-      
-      ),
-    );
-  }
-
-  //build participant tile
-  Widget _buildStudentTile(AttendanceRecord record){
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.blueGrey,
-          child: Text(
-            record.studentName[0],
-          ),
-        ),
-        title: Text(
-          record.studentName,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-            fontSize: 20
-          ),
-        ),
-        subtitle: Column(
-          children: [
-            Text(
-              'ID: ${record.studentIdNumber}',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-                fontSize: 16
-              ),
-            ),
-              Text(
-                'Attended: ${DateFormat.MMMd().add_jm().format(record.timestamp)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontSize: 16
-                ),
-             ),
-          ],
-        ),
-        trailing: Chip(
-            color: WidgetStateProperty.all(Colors.green),
-            label: Text(
-              'Present',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 16
-              ),
-            ),
-          )
-      ),
-    );
-  }
-
   @override
-  void onClose() {
-    super.onClose();
+  void onClose(){
     searchController.dispose();
+  }
+
+
+  void _filterAttendees(){
+    if(searchQuery.value.isEmpty){
+      filteredAttendees.value = sessionAttendees;
+    } else {
+      filteredAttendees.value = sessionAttendees.where((attendee){
+        return attendee.studentName.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
+          attendee.matricNumber.toLowerCase().contains(searchQuery.value.toLowerCase());
+      }).toList();
+    }
+
+    
+  }
+
+  Future<void> fetchSessionAttendance(String sessionId) async {
+    isLoading.value = true;
+    message.value = 'Fetching attendance...';
+    sessionAttendees.clear();
+
+    try {
+      // 1. Fetch attendance records for the given session ID
+      final attendanceSnapshot = await _firestore
+          .collection('attendance')
+          .where('sessionId', isEqualTo: sessionId)
+          .orderBy('timestamp', descending: false)
+          .get();
+
+      if (attendanceSnapshot.docs.isEmpty) {
+        message.value = 'No attendees found for this session.';
+        isLoading.value = false;
+        return;
+      }
+
+      final List<String> studentIds = attendanceSnapshot.docs.map((doc) => doc['studentId'] as String).toList();
+      
+      // 2. Fetch student profiles to get names and matric numbers
+      final usersSnapshot = await _firestore.collection('usersData')
+          .where(FieldPath.documentId, whereIn: studentIds)
+          .get();
+
+      final Map<String, dynamic> usersData = {};
+      for(var doc in usersSnapshot.docs){
+        usersData[doc.id] = doc.data();
+      }
+
+      // 3. Combine the data into a view model
+      final List<AttendanceViewModel> attendees = attendanceSnapshot.docs.map((attendanceDoc) {
+        final attendanceData = attendanceDoc.data();
+        final String studentId = attendanceData['studentId'];
+        final userData = usersData[studentId];
+
+        return AttendanceViewModel(
+          studentId: studentId,
+          studentName: userData?['name'] ?? 'N/A',
+          matricNumber: userData?['idNumber'] ?? 'N/A',
+          department: userData?['department'] ?? 'N/A',
+          timestamp: attendanceData['timestamp'] != null
+              ? attendanceData['timestamp'].toDate()
+              : 'N/A',
+        );
+      }).toList();
+
+      sessionAttendees.value = attendees;
+      message.value = 'Attendance loaded successfully.';
+    } catch (e) {
+      message.value = 'An error occurred while fetching attendance: ${e.toString()}';
+      // ignore: avoid_print
+      printError(info: 'Error fetching attendance: $e');
+      Get.snackbar('Error', message.value, snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red);
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> downloadSessionAttendance(String sessionId) async {
+    isDownloading.value = true;
+    message.value = 'Preparing download...';
+
+    try{
+      // 1. check and request permission 
+      if(GetPlatform.isAndroid){
+        var status = await Permission.storage.request();
+        if (!status.isGranted) {
+          message.value = 'Storage permission denied. Cannot download file';
+          SnackbarMessageShow.infoSnack(title: 'Permission denied',message: message.value,);
+          isDownloading.value = false;
+          return;
+        }
+      }
+
+      // 2. Fetch attendance data from specific session in firestore
+      final attendanceSnapshot = await _firestore
+        .collection('attendance')
+        .where('sessionId', isEqualTo: sessionId)
+        .orderBy('timestamp', descending: false)
+        .get();
+
+      if(attendanceSnapshot.docs.isEmpty){
+        message.value = 'No attendance found for this session';
+        SnackbarMessageShow.infoSnack(title: 'Download failed',message: message.value,);
+        isDownloading.value = false;
+        return;
+      }
+
+      // 3. Convert firestore data into a list of lists for csv
+      final List<List<dynamic>> csvData = [
+        //add header rows
+        [
+          'studentIdNumber','studentName','department','timestamp'
+        ]
+      ];
+
+      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+
+      for(var doc in attendanceSnapshot.docs){
+        final data = doc.data();
+        csvData.add([
+          data['studentIdNumber'],
+          data['studentName'],
+          data['department'],
+          formatter.format(data['timestamp'].toDate()),
+        ]);
+      }
+
+      // 4. Convert the list of lists to a csv string 
+      final csvString = const ListToCsvConverter().convert(csvData);
+      final String fileName = 'attendance_session_${sessionId.replaceAll('', '_')}.csv';
+
+      //Use file_saver to save the file 
+      await FileSaver.instance.saveFile(
+        name: fileName,
+        bytes: Uint8List.fromList(csvString.codeUnits),
+        mimeType: MimeType.csv
+      );
+
+      message.value = 'Attendance downloaded successfully';
+      SnackbarMessageShow.successSnack(title: 'Success',message: message.value,);
+    } catch (e){
+      printError(info: 'Download failed: $e');
+      message.value = 'Failed to download file: ${e.toString()}';
+      SnackbarMessageShow.infoSnack(title: 'Download Error',message: message.value,);
+    } finally {
+      isDownloading.value = false;
+    }
   }
 }

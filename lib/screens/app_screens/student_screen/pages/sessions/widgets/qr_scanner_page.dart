@@ -11,10 +11,10 @@ class QrScannerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     //final AttendanceController controller = Get.put(TakeAttendanceController());
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Scan QR Code', style: TextStyle(fontSize: 24,fontWeight: FontWeight.w500, color: Colors.white)),
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_rounded, size: 25, color: Colors.white,),
           onPressed: () => Get.back(),

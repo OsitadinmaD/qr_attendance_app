@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 class SessionTabBarView{ 
 
-  static PreferredSizeWidget tabBar({required TabController tabController, required String tab1Label, required String tab2Label}){
+  static PreferredSizeWidget tabBar({required TabController tabController, required String tab1Label, required String tab2Label, required BuildContext context}){
     return PreferredSize(
       preferredSize: Size.fromHeight(40),
       child: ClipRRect(
@@ -11,7 +11,7 @@ class SessionTabBarView{
         child: Container(
           height: 40,
           width: Get.width * 0.9,
-          color: Colors.blue.shade300,
+          color: Colors.blue,
           child: TabBar(
             controller: tabController,
             tabs: [
@@ -44,7 +44,7 @@ class SessionTabBarView{
             indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(20)),
-              color: Colors.blue,
+              color: Theme.of(context).colorScheme.primary,
             ),
             labelColor: Colors.white,
             unselectedLabelColor: Colors.blueGrey,

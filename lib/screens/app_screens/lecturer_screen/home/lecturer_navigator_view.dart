@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_attendance_app/screens/app_navigation_control/navigator_controller.dart';
+import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages/my_sessions/controller/sessions_controller.dart';
 
 import 'widgets/bottom_navigation_bar.dart';
 import 'widgets/lecturer_page_views.dart';
@@ -11,12 +12,13 @@ class LecturerNavigatorScreen extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     final navigatorController = Get.put<NavigatorController>(NavigatorController());
+    Get.put<SessionsController>(SessionsController());
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBody: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Obx(() => Text(
             navigatorController.lecturerScreenTitle(),
             style: TextStyle(

@@ -38,7 +38,7 @@ class NavigatorController extends GetxController {
     if(currentIndexS.value == 0){
       return "QR-Dentify Available Sessions";
     }else if(currentIndexS.value == 1){
-      return 'Attendance Trend';
+      return 'Attendance History';
     }else{
       return 'Profile';
     }

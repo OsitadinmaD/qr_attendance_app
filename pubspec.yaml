@@ -46,6 +46,10 @@ dependencies:
   syncfusion_flutter_datepicker: ^29.1.38
   local_auth: ^2.3.0
   permission_handler: ^12.0.0+1
+  csv: ^6.0.0
+  file_saver: ^0.2.14
+  confetti: ^0.8.0
+  device_info_plus: ^11.3.0
 
 dev_dependencies:
   flutter_test:

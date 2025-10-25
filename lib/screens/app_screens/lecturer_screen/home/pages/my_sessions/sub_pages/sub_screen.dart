@@ -4,6 +4,7 @@ import 'package:qr_attendance_app/screens/app_screens/lecturer_screen/home/pages
 import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/tabbar.dart';
 
 import '../session model/session_model.dart';
+import 'controller/attendance_record_controller.dart';
 
 class ParticpantsAttendantsScreen extends StatefulWidget {
   const ParticpantsAttendantsScreen({super.key, required this.session});
@@ -25,20 +26,27 @@ class _ParticpantsAttendantsScreenState extends State<ParticpantsAttendantsScree
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put<AttendeesController>(AttendeesController());
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => Get.back() , 
-          icon: Icon(Icons.arrow_back_rounded,color: Colors.white, size: 25,)
+          icon: Icon(Icons.arrow_back_rounded,color: Colors.white, size: 25,),
+          tooltip: 'Back',
         ),
-        actions: [
-          IconButton(
-            onPressed: (){}, 
-            icon: Icon(Icons.download_rounded,size: 20,color: Colors.white,)
+        actions: [//surn2qQrusx699KgtRzZ
+          Obx(() => 
+            controller.isDownloading.value ? 
+            Center(child: CircularProgressIndicator(color: Colors.white,),) :
+            IconButton(
+              tooltip: 'Download Attendance',
+              onPressed: (){},
+              icon: Icon(Icons.download_rounded,size: 20,color: Colors.white,),//controller.isLoading.value ? CircularProgressIndicator(color: Colors.white,) : 
+            )
           )
         ],
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of( context).colorScheme.primary,
         title: Text(
           'INFO: ${widget.session.title}',
           style: TextStyle(
@@ -55,6 +63,7 @@ class _ParticpantsAttendantsScreenState extends State<ParticpantsAttendantsScree
             children: [
               SizedBox(height: 5,),
               SessionTabBarView.tabBar(
+                context: context,
                 tabController: _tabController,
                 tab1Label: 'Participants',
                 tab2Label: 'Attendees',

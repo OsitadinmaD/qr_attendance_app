@@ -20,7 +20,7 @@ class StudentProfilePixInfo extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 70,
-              backgroundColor: Colors.blue.shade300,
+              backgroundColor: Theme.of(context).primaryColor,
               child: Text('A',
                 style: TextStyle(
                   fontSize: 70,fontWeight: FontWeight.bold,color: Colors.white

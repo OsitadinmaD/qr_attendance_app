@@ -4,9 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/widgets/snackbar_message_show.dart';
+import 'package:qr_attendance_app/constants/helpers/snackbar_message_show.dart';
 
 import '../../../../../../../auth_screens.dart/sign_up/user_model/user_model.dart';
+import 'attendance_record_controller.dart';
 
 class ParticipantsController extends GetxController {
   final String sessionId;
@@ -16,6 +17,7 @@ class ParticipantsController extends GetxController {
   RxInt totalPartcicipants = 0.obs;
   RxString searchQuery = ''.obs;
   RxBool isLoading = true.obs;
+
   final searchController = TextEditingController();
 
   ParticipantsController({required this.sessionId});
@@ -52,7 +54,7 @@ class ParticipantsController extends GetxController {
 
       });
     } catch (e) {
-      snackBarshow(title: 'Error', message: 'Could not load participants', backgroundColor: Colors.red, icon: Icons.error_outline_rounded);
+      SnackbarMessageShow.errorSnack(title: 'Error', message: 'Could not load participants', );
     } finally {
       isLoading.value = false;
     }
@@ -77,11 +79,9 @@ class ParticipantsController extends GetxController {
       allParticipants.value = users;
       _filterParticipants();//Apply current search filter
     } catch (e) {
-      snackBarshow(
+      SnackbarMessageShow.errorSnack(
         title: 'Error', 
         message: 'Failed to load participants', 
-        backgroundColor: Colors.red, 
-        icon: Icons.error_rounded
       );
     } finally {
       isLoading.value = false;
@@ -105,6 +105,7 @@ class ParticipantsController extends GetxController {
 
   //build attendance stat
   Widget buildAttendanceStat(){
+    final attendeesController = Get.put(AttendeesController());
     return Obx((){
 
       return Card(
@@ -116,8 +117,8 @@ class ParticipantsController extends GetxController {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildStatCard('Total', '${totalPartcicipants.value}'),
-              _buildStatCard('Present', ''),
-              _buildStatCard('Absent', ''),
+              _buildStatCard('Present', '${attendeesController.sessionAttendees.length}'),
+              _buildStatCard('Absent', '${totalPartcicipants.value - attendeesController.sessionAttendees.length}'),
             ],
           ),
         ),
@@ -153,20 +154,36 @@ class ParticipantsController extends GetxController {
     return Expanded(
       child: Obx((){
         if(isLoading.value){
-          return Center(child: CircularProgressIndicator(color: Colors.white,),);
+          return Center(child: CircularProgressIndicator(color: Colors.blue,),);
         }
 
         if(filteredParticipants.isEmpty){
           return Center(
-            child: Text(
-              'No Participant Found',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 25,
-                fontWeight: FontWeight.w600
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.event_available_rounded, size: 64, color: Colors.grey,),
+              const SizedBox(height: 16,),
+              Text(
+                'No participants yet',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500
+                ),
               ),
-            ),
-          );
+              const SizedBox(height: 8,),
+              Text(
+                'Participants will be seen here',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500
+                ),
+              )
+            ],
+          ),
+        );
         }
       
         return ListView.builder(
@@ -186,8 +203,6 @@ class ParticipantsController extends GetxController {
   //build participant tile
   Widget _buildParticipantTile(UserModel participant){
     return Card(
-      color: Colors.white,
-      margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -195,7 +210,7 @@ class ParticipantsController extends GetxController {
           spacing: 20,
           children: [
             CircleAvatar(
-              backgroundColor: Colors.blueGrey.shade200,
+              backgroundColor: Colors.blue.shade200,
               child: Text(
                 participant.name[0]
               ),
@@ -229,22 +244,12 @@ class ParticipantsController extends GetxController {
                   ),
                 ),
                 Text(
+                  //will be corected
                   'Joined at: ${DateFormat.MMMd().add_jm().format(DateTime.now())}',// Update from firestore
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: const Color.fromRGBO(0, 0, 0, 1),
                     fontSize: 12
-                  ),
-                ),
-                Chip(
-                  color: WidgetStateProperty.all(Colors.red.shade300),//update this from the participant collection
-                  label: Text(
-                    'Attendance not taken yet',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 12
-                    ),
                   ),
                 ) 
               ],

@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qr_attendance_app/constants/helpers/snackbar_message_show.dart';
 import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/user_model/app_user.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/widgets/snackbar_message_show.dart';
 
 class AuthController extends GetxController {
   final Rxn<AppUser> currentUser = Rxn<AppUser>();
@@ -33,7 +32,7 @@ class AuthController extends GetxController {
           await _createUserDocument(user);
         }
       } catch (e) {
-        snackBarshow(title: 'Error', message: 'Failed to load User data', backgroundColor: Colors.red, icon: Icons.error_outline_rounded);
+        SnackbarMessageShow.errorSnack(title: 'Error', message: 'Failed to load User data',);
       } finally {
         isLoading.value = false;
       }

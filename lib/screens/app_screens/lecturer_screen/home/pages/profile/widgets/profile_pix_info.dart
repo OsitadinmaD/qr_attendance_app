@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import 'controller/user_profile_controller.dart';
 
 class ProfilePixInfo extends StatelessWidget {
   const ProfilePixInfo({
@@ -7,6 +10,7 @@ class ProfilePixInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put<UserProfileController>(UserProfileController());
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height * 0.32,
@@ -18,27 +22,29 @@ class ProfilePixInfo extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 70,
-              backgroundColor: Colors.blue.shade300,
+              backgroundColor: Theme.of(context).primaryColor,
               child: Text('A',
                 style: TextStyle(
                   fontSize: 70,fontWeight: FontWeight.bold,color: Colors.white
                 ),
               ),
             ),
-            Text(
-              'Proffessor M. Abuali',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 35
+            Obx(() => Text(
+                controller.userName.value.toUpperCase(),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 35
+                ),
               ),
             ),
-            Text(
-              'mohammedabuali52@gmail.com',
-              style: TextStyle(
-                color: Colors.black54,
-                fontWeight: FontWeight.w500,
-                fontSize: 22
+            Obx(() => Text(
+                controller.userEmail.value.toLowerCase() ,
+                style: TextStyle(
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 22
+                ),
               ),
             )
           ],

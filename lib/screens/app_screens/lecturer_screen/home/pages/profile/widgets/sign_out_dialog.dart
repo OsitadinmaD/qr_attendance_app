@@ -41,7 +41,7 @@ Future<dynamic> signOutDialog(BuildContext context, LoginController logOutContro
                               ),
                             ),
                           ],
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Theme.of(context).colorScheme.secondary,
                           content: Text(
                             'Are you sure you want to log out?',
                             style: TextStyle(

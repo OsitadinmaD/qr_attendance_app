@@ -14,9 +14,9 @@ class NewSessionsPage extends GetView<NewSessionController> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(6.0),
         child: ListView(
           scrollDirection: Axis.vertical,
           physics: BouncingScrollPhysics(),

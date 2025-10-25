@@ -19,21 +19,26 @@ class _MySessionsPageState extends State<MySessionsPage> {
   final SessionsController fetchSessionsController = Get.find<SessionsController>();
   final String lecturerId = FirebaseAuth.instance.currentUser!.uid;
 
-  @override
-  void initState(){
-    fetchSessionsController.getLecturerSessionStream(lecturerId);
-    super.initState();
-  }
+  //@override
+  //void initState(){
+    //WidgetsBinding.instance.addPostFrameCallback((_) {
+      //fetchSessionsController.getLecturerSessionStream(lecturerId);
+    //});
+    //super.initState();
+ // }
 
   @override
   Widget build(BuildContext context) {
     return  SizedBox(
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.7,
       width: MediaQuery.of(context).size.width,
 
-      child: StreamBuilder(
+      child: StreamBuilder<List<SessionModel>>(
             stream: fetchSessionsController.getLecturerSessionStream(lecturerId), 
             builder: (context, snapshot){
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator(color: Colors.blue,),);
+              }
               if(snapshot.hasError){
                 return Center(
                   child: Text(
@@ -46,9 +51,36 @@ class _MySessionsPageState extends State<MySessionsPage> {
                   ),
                 );
               }
-              if (!snapshot.hasData){
-                return Center(child: CircularProgressIndicator(color: Colors.blue,),);
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.event_available_rounded, size: 64, color: Colors.grey,),
+                      const SizedBox(height: 16,),
+              Text(
+                        'No sessions joined yet',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500
+                        ),
+                      ),
+                      const SizedBox(height: 8,),
+                      Text(
+                        'Join available sessions to see them here',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500
+                        ),
+                      )
+                    ],
+                  ),
+                );
               }
+
+              
 
               return ListView.builder(
                 itemCount: snapshot.data!.length,
@@ -56,9 +88,6 @@ class _MySessionsPageState extends State<MySessionsPage> {
                   SessionModel data = snapshot.data![index];
  
                   return Card(
-                    margin: EdgeInsets.all(8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    color: Colors.white,
                     child: ListTile(
                       onTap: () async => await Get.to(() => ParticpantsAttendantsScreen(session: data,)),
                       title: Text(
@@ -86,14 +115,14 @@ class _MySessionsPageState extends State<MySessionsPage> {
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w500,
-                              color: data.isQRActive ? Colors.green : Colors.red
+                              color: data.isQRActive ? Theme.of(context).primaryColorLight : Colors.red[100]
                             ),
                           ),
                         ],
                       ),
                       trailing: IconButton(
-                        onPressed: () => fetchSessionsController.showQrCode(data), 
-                        icon: Icon(Icons.qr_code_2_rounded, size: 30, color: Colors.black,),
+                        onPressed: () => fetchSessionsController.showQrCode(data,context), 
+                        icon: Icon(Icons.qr_code_2_rounded, size: 30, color: Theme.of(context).primaryColor,),
                       )
                     ),
                   );

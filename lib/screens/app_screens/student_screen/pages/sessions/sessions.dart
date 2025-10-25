@@ -26,6 +26,7 @@ class _StudentSessionsJoinState extends State<StudentSessionsJoin> with SingleTi
           children: [
             SizedBox(height: 5,),
             SessionTabBarView.tabBar(
+              context: context,
               tabController: tabController,
               tab1Label: 'Active Sessions',
               tab2Label: 'Joined Sessions',

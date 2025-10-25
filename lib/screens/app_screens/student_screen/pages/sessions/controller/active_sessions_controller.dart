@@ -2,10 +2,9 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:qr_attendance_app/constants/helpers/snackbar_message_show.dart';
 import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/sessions/participant_model/participant_model.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/widgets/snackbar_message_show.dart';
 
 import '../../../../lecturer_screen/home/pages/my_sessions/session model/session_model.dart';
 
@@ -67,7 +66,7 @@ class ActiveSessionsController extends GetxController {
           return Participant.fromFirebaseDoc(doc);
         } catch (e) {
           // ignore: avoid_print
-          print('Mapping error: $e');
+          printError(info: 'Mapping error: $e');
         }
       }).whereType<Participant>().toList();
     });
@@ -84,31 +83,28 @@ class ActiveSessionsController extends GetxController {
       
       if(!userDoc.exists) throw Exception('User data not found');
 
-
-      await _firestore
-        .collection('participants')
-        .add({
-          'sessionId': session.id,
-          'studentId': userId,
-          'joinedAt': FieldValue.serverTimestamp(),
-          'attendanceMarked': false,
-          'qrData': session.qrCodeData,
-          'sessionTitle': session.title,
-          'sessionDescription': session.description,
-        }).whenComplete(() => snackBarshow(
-          title: 'Success', 
-          message: 'You have successfully joined the session', 
-          backgroundColor: Colors.green, 
-          icon: Icons.check_circle_outline_rounded
-        ),
-      );
-      joinedStatus[session.id] = true;
+      
+          await _firestore
+          .collection('participants')
+          .add({
+            'sessionId': session.id,
+            'studentId': userId,
+            'joinedAt': FieldValue.serverTimestamp(),
+            'attendanceMarked': false,
+            'qrData': session.qrCodeData,
+            'sessionTitle': session.title,
+            'sessionDescription': session.description,
+          }).whenComplete(() => SnackbarMessageShow.successSnack(
+            title: 'Success', 
+            message: 'You have successfully joined the session',
+          ),
+        );
+        joinedStatus[session.id] = true;
+      
     } catch (e) {
-      snackBarshow(
+      SnackbarMessageShow.errorSnack(
         title: 'Error', 
         message: 'An unexpected error occurred', 
-        backgroundColor: Colors.red, 
-        icon: Icons.error_outline_rounded
       );
     }
   }

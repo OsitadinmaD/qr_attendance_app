@@ -2,8 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:uuid/uuid.dart';
-import '../widgets/snackbar_message_show.dart';
+import 'package:qr_attendance_app/constants/helpers/snackbar_message_show.dart';
 
 class SignUpController extends GetxController {
   late TextEditingController nameTextController;
@@ -36,36 +35,31 @@ class SignUpController extends GetxController {
           password: passwordTextController.text.trim()
         );
 
-        final userId = Uuid().v4();
         // Save additional user data in firestore
         await FirebaseFirestore.instance.collection('usersData')
         .doc(userAuth.user!.uid)
         .set({
-          'userId':userId,
+          'userId':userAuth.user!.uid,
           'idNumber': idNumberTextController.text.toUpperCase().trim(),
           'email': emailTextController.text.toUpperCase().trim(),
           'name': nameTextController.text.toUpperCase().trim(),
           'isLecturer': isLecturer.value,
           'department': departmentTextController.text.toUpperCase().trim(),
           'createdAt': FieldValue.serverTimestamp()
-        }).whenComplete(() => snackBarshow(
+        }).whenComplete(() => SnackbarMessageShow.successSnack(
           title: 'Success', 
           message: 'Account Created Successfully \nProceed to login', 
-          backgroundColor: Colors.green, 
-          icon: Icons.check_circle
           ),
-        ).onError((error, stackTrace) => snackBarshow(
+        ).onError((error, stackTrace) => SnackbarMessageShow.errorSnack(
           title: 'Error', 
           message: 'An Unexpected error occurred', 
-          backgroundColor: Colors.red, 
-          icon: Icons.error_outline_outlined
          ),
         );
       } on FirebaseAuthException catch (e) {
-          snackBarshow(title: 'Error',message: _getErrorMessage(e.code),backgroundColor: Colors.red,icon: Icons.error_outline_rounded);
+          SnackbarMessageShow.errorSnack(title: 'Error',message: _getErrorMessage(e.code),);
           //throw FirebaseAuthException(code: e.code,message: errorMessage);
         } catch (e) {
-          snackBarshow(title: 'Error',message: 'Something went wrong',backgroundColor: Colors.red,icon: Icons.error_outline_rounded);
+          SnackbarMessageShow.errorSnack(title: 'Error',message: 'Something went wrong',);
       } finally{
           isLoading.value = false;
     }
@@ -90,14 +84,14 @@ class SignUpController extends GetxController {
   void onClose() {
     super.onClose();
     nameTextController.clear();
-    nameTextController.dispose();
+    //nameTextController.dispose();
     idNumberTextController.clear();
-    idNumberTextController.dispose();
+    //idNumberTextController.dispose();
     emailTextController.clear();
-    emailTextController.dispose();
+    //emailTextController.dispose();
     passwordTextController.clear();
-    passwordTextController.dispose();
+    //passwordTextController.dispose();
     departmentTextController.clear();
-    departmentTextController.dispose();
+    //departmentTextController.dispose();
   }
 }

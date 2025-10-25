@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_attendance_app/screens/app_screens/student_screen/pages/sessions/controller/active_sessions_controller.dart';
@@ -9,10 +10,11 @@ import '../../../../lecturer_screen/home/pages/my_sessions/session model/session
 import '../controller/attendance_controller.dart';
 
 class AvailableSessions {
+
   AvailableSessions(); 
 
   Widget buildActiveSessionStream(){
-    final controller = Get.put<ActiveSessionsController>(ActiveSessionsController());
+    final controller = Get.find<ActiveSessionsController>();
     return StreamBuilder<List<SessionModel>>(
       stream: controller.fetchActiveSessions(), 
       builder: (context, snapshot) {
@@ -57,8 +59,8 @@ class AvailableSessions {
             itemCount: snapshot.data!.length ,
             itemBuilder: (context, index) {
               final session = snapshot.data![index];
-          
-              return _buildSessionCard(session, isActive: true);
+
+              return _buildSessionCard(session, isActive: true, context: context);
             },
            );
          }
@@ -67,61 +69,80 @@ class AvailableSessions {
   
 
   Widget buildJoinedSessionsStream(){
-    final controller = Get.put<ActiveSessionsController>(ActiveSessionsController());
-    return StreamBuilder<List<Participant>>(
-      stream: controller.getJoinedSessions(),
-      builder: (context, snapshot) {
-        if(snapshot.connectionState == ConnectionState.waiting){
-          return const Center(child: CircularProgressIndicator(color: Colors.blue,),);
-        }
-
-        if(!snapshot.hasData || snapshot.data!.isEmpty){
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.event_available_rounded, size: 64, color: Colors.grey,),
-                const SizedBox(height: 16,),
-                Text(
-                  'No sessions joined yet',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500
-                  ),
+    final controller = Get.find<ActiveSessionsController>();
+    final attendanceController = Get.find<AttendanceController>();
+    return Stack(
+      children: [
+        StreamBuilder<List<Participant>>(
+          stream: controller.getJoinedSessions(),
+          builder: (context, snapshot) {
+            if(snapshot.connectionState == ConnectionState.waiting){
+              return const Center(child: CircularProgressIndicator(color: Colors.blue,),);
+            }
+        
+            if(!snapshot.hasData || snapshot.data!.isEmpty){
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.event_available_rounded, size: 64, color: Colors.grey,),
+                    const SizedBox(height: 16,),
+                    Text(
+                      'No sessions joined yet',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500
+                      ),
+                    ),
+                    const SizedBox(height: 8,),
+                    Text(
+                      'Join available sessions to see them here',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500
+                      ),
+                    )
+                  ],
                 ),
-                const SizedBox(height: 8,),
-                Text(
-                  'Join available sessions to see them here',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500
-                  ),
-                )
-              ],
-            ),
-          );
-        }
-
-        return 
-        ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                final participant = snapshot.data![index];
-
-                //check if joined
-                controller.checkIfJoined(participant.sessionId,participant.studentId);
-                
-                return _buildJoinedSessionCard(participant);
+              );
+            }
+        
+            return 
+            ListView.builder(
+                  itemCount: snapshot.data!.length,
+                  itemBuilder: (context, index) {
+                    final participant = snapshot.data![index];
+        
+                    //check if joined
+                    controller.checkIfJoined(participant.sessionId,participant.studentId);
+                    
+                    return _buildJoinedSessionCard(participant);
+                  },
+                );
+            }
+          ),
+          Positioned.fill(
+            child: Align(
+            alignment: Alignment.center,
+            child: ConfettiWidget(
+              confettiController: attendanceController.confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              colors: const [Colors.blue, Colors.green, Colors.pink, Colors.yellow,Colors.orange,Colors.purple],
+              createParticlePath: (size) {
+                return Path()..addOval(Rect.fromCircle(center: Offset(size.width / 2, size.height / 2), radius: size.width / 2));
               },
-            );
-        }
-      );
+            ),
+          ),
+        ),
+      ],
+    );
     }
 
   // GetX controller instance
-  final AttendanceController attendanceController = Get.put(AttendanceController());
+  final AttendanceController attendanceController = Get.find<AttendanceController>();
   final PermissionService _permissionService = PermissionService();
 
   Future<void> _scanAndMarkAttendance(String currentSessionId) async {
@@ -176,8 +197,7 @@ class AvailableSessions {
   }
 
   Widget _buildJoinedSessionCard(Participant participant)  {
-    ///final isQRActiveController = Get.put<SessionsController>(SessionsController());
-    //final TakeAttendanceController controller = Get.put(TakeAttendanceController());
+
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
         .collection('sessions')
@@ -194,70 +214,65 @@ class AvailableSessions {
         return Card(
           color: Colors.white,
           margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [ 
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    participant.sessionTitle,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w600
-                    ),
-                  ),
-                  SizedBox(height: 8,),
-                  Text(
-                    participant.sessionDescription,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500
-                    ),
-                  ),
-                  Text(
-                    'Joined at: ${participant.joinedAt.toString()}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500
-                    ),
-                  ),
-                ],
+          child: ListTile(
+            title: Text(
+              participant.sessionTitle,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600
               ),
-              Obx(() => attendanceController.isLoading.value
-                ? const Column(
-                    children: [
-                      CircularProgressIndicator(color: Colors.blue,),
-                      SizedBox(height: 5),
-                      Text('Please wait...'),
-                    ],
-                  )
-                : ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor: isActive ? WidgetStatePropertyAll(Colors.blue) : WidgetStatePropertyAll(Colors.grey)
-                    ),
-                    onPressed: isActive ? () async => _scanAndMarkAttendance(participant.sessionId) : null,
-                    child: Text(
-                      'Scan QR',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600
-                      ),
-                    )
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 8,),
+                Text(
+                  participant.sessionDescription,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500
+                  ),
+                ),
+                Text(
+                  'Joined at: ${participant.joinedAt.toString()}',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500
+                  ),
+                ),
+              ],
+            ),
+            trailing: Obx(() => attendanceController.isLoading.value
+              ? const Column(
+                children: [
+                  CircularProgressIndicator(color: Colors.blue,),
+                  SizedBox(height: 5),
+                  Text('Please wait...'),
+                ],
+              )
+              : ElevatedButton(
+                  style: ButtonStyle(
+                  backgroundColor: isActive ? WidgetStatePropertyAll(Theme.of(context).colorScheme.primary) : WidgetStatePropertyAll(Colors.grey)
+                ),
+                onPressed: isActive ? () async => _scanAndMarkAttendance(participant.sessionId) : null,
+                child: Text(
+                  'Scan QR',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600
                   ),
                 )
-            ],
+              ),
+            ),
           ),
-        ),
       );
       },
     );
   }
 
-  Widget _buildSessionCard(SessionModel session, {required bool isActive})  {
+  Widget _buildSessionCard(SessionModel session, {required bool isActive, required BuildContext context}) {
     final remainingTime = DateTime.now().add(Duration(days: 1)).difference(DateTime.now());//session.joinEndTime!.difference
     final hoursLeft = remainingTime.inHours;
     final minutesLeft = remainingTime.inMinutes;
@@ -303,7 +318,7 @@ class AvailableSessions {
               ],
             ),
             const SizedBox(height: 16,),
-            if(isActive) _buildJoinButton(session),
+            if(isActive) _buildJoinButton(session, context),
             if(!isActive) _buildJoinedStatus(),
           ],
         ),
@@ -311,8 +326,8 @@ class AvailableSessions {
     );
   }
 
-  Widget _buildJoinButton(SessionModel session){
-    final controller = Get.put<ActiveSessionsController>(ActiveSessionsController());
+  Widget _buildJoinButton(SessionModel session, BuildContext context){
+    final controller = Get.find<ActiveSessionsController>();
     return Obx(() {
       final hasJoined = controller.joinedStatus[session.id] ?? false;
         return ElevatedButton(
@@ -320,7 +335,7 @@ class AvailableSessions {
             controller.joinSession(session: session);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: hasJoined ? Colors.grey : Colors.blue 
+            backgroundColor: hasJoined ? Colors.grey : Theme.of(context).colorScheme.primary
           ),
           child: Text(
             hasJoined ? 'Joined' : 'Join Session',

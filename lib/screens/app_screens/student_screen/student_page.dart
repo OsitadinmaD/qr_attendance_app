@@ -12,10 +12,10 @@ class StudentScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final NavigatorController navigatorController = Get.put(NavigatorController());
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         centerTitle: false,
-        backgroundColor: Colors.blue,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Obx( () => Text(
             navigatorController.studentScreenTitle(),
             style: TextStyle(

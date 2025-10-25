@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qr_attendance_app/screens/auth_screens.dart/sign_up/widgets/snackbar_message_show.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import '../session model/session_model.dart';
+import 'package:qr_attendance_app/constants/helpers/snackbar_message_show.dart';
 
 class SessionsController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -25,7 +25,7 @@ class SessionsController extends GetxController {
   }
 
   //Lecturer View QR code generator
-  void showQrCode(SessionModel session){
+  void showQrCode(SessionModel session, BuildContext context){
     isQRActive.value = session.isQRActive;
     Get.dialog(
       useSafeArea: true,
@@ -33,7 +33,7 @@ class SessionsController extends GetxController {
         title: Text(
           'QR Data: ${session.title}',
           style: TextStyle(
-            color: Colors.blue,
+            color: Theme.of(context).colorScheme.primary,
             fontSize: 18,
             fontWeight: FontWeight.w500,
             overflow: TextOverflow.fade
@@ -44,7 +44,7 @@ class SessionsController extends GetxController {
           Row(
             spacing: 5,
             children: [
-              ElevatedButton(
+              OutlinedButton(
                 onPressed: () => Get.back(), 
                 child: Text(
                   'Close',
@@ -57,6 +57,7 @@ class SessionsController extends GetxController {
               ),
                 ElevatedButton(
                   onPressed: () async => await updateQRStatus(session.id, !session.isQRActive), 
+                  style: ElevatedButton.styleFrom(),
                   child: Text(
                     session.isQRActive ? 'Deactivate QR' : 'Activate QR',
                     style: TextStyle(
@@ -89,9 +90,9 @@ class SessionsController extends GetxController {
       await _firestore.collection('sessions')
         .doc(sessionId)
         .update({'isQRActive': isActive})
-        .whenComplete(() => snackBarshow(title: 'Success', message: 'QR status acivated successfully', backgroundColor: Colors.green, icon: Icons.check_circle_outline_rounded));
+        .whenComplete(() => SnackbarMessageShow.successSnack(title: 'Success', message: 'QR status acivated successfully'));
     } catch (e) {
-      snackBarshow(title: 'Error', message: 'Could not update QR status', backgroundColor: Colors.red, icon: Icons.error_outline_rounded);
+      SnackbarMessageShow.errorSnack(title: 'Error', message: 'Could not update QR status',);
     }
   }
 }
